@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
+                  android:title="Preferences">
+    <EditTextPreference android:title="Username"
+                        android:inputType="text" android:summary="Set your login name here"
+                        android:key="@string/username" android:persistent="true" android:defaultValue=""/>
+    <EditTextPreference android:title="Password"
+                        android:inputType="textPassword" android:summary=""
+                        android:key="@string/password" android:persistent="true" android:defaultValue=""/>
+    <CheckBoxPreference android:summary="Auto clock out after 8 hours" android:title="Auto Clock"
+                        android:key="@string/autoclock" android:defaultValue="false"/>
+    <CheckBoxPreference android:summary="Keep ETime running in the background when back is pressed" android:title="Keep in Background"
+                        android:key="@string/keepInBackground" android:defaultValue="true"/>
+</PreferenceScreen>

@@ -1,0 +1,47 @@
+K 25
+svn:wc:ra_dav:version-url
+V 69
+/svn/acm/!svn/ver/68456/users/dpayne/ETime/trunk/src/com/etrade/etime
+END
+ETimeUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/acm/!svn/ver/68384/users/dpayne/ETime/trunk/src/com/etrade/etime/ETimeUtils.java
+END
+Punch.java
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/acm/!svn/ver/68394/users/dpayne/ETime/trunk/src/com/etrade/etime/Punch.java
+END
+TimeCardActivity.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/acm/!svn/ver/68392/users/dpayne/ETime/trunk/src/com/etrade/etime/TimeCardActivity.java
+END
+LoginAsyncTask.java
+K 25
+svn:wc:ra_dav:version-url
+V 89
+/svn/acm/!svn/ver/68456/users/dpayne/ETime/trunk/src/com/etrade/etime/LoginAsyncTask.java
+END
+ETimePreferences.java
+K 25
+svn:wc:ra_dav:version-url
+V 91
+/svn/acm/!svn/ver/68395/users/dpayne/ETime/trunk/src/com/etrade/etime/ETimePreferences.java
+END
+TimeCardAsyncTask.java
+K 25
+svn:wc:ra_dav:version-url
+V 92
+/svn/acm/!svn/ver/68394/users/dpayne/ETime/trunk/src/com/etrade/etime/TimeCardAsyncTask.java
+END
+ETimeActivity.java
+K 25
+svn:wc:ra_dav:version-url
+V 88
+/svn/acm/!svn/ver/68455/users/dpayne/ETime/trunk/src/com/etrade/etime/ETimeActivity.java
+END

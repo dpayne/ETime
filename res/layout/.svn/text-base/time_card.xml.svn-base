@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:layout_width="fill_parent"
+              android:layout_height="fill_parent"
+              android:background="#086CA2"
+>
+    <WebView android:id="@+id/web_timecard"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent"
+             android:visibility="gone"
+            />
+    <ProgressBar android:id="@+id/pb_timecard"
+                 android:layout_marginLeft="5dp"
+                 android:layout_width="250dp"
+                 android:progressDrawable="@drawable/myprogressbar"
+                 android:layout_marginBottom="90dp"
+                 android:layout_marginRight="10dp"
+                 style="?android:attr/progressBarStyleHorizontal"
+                 android:layout_height="wrap_content"
+                 android:layout_centerInParent="true"
+                 android:layout_marginTop="15dip"
+                 android:visibility="visible"
+                 android:background="#086CA2"
+            ></ProgressBar>
+    <TextView
+            android:id="@+id/tv_loadTimeCard"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="7pt"
+            android:layout_centerInParent="true"
+            android:layout_marginRight="9dip"
+            android:layout_marginTop="15dip"
+            android:layout_marginLeft="15dip"
+            android:text="@string/loading"
+            android:textColor="#A65A00"
+            android:visibility="visible"
+            />
+
+</RelativeLayout>

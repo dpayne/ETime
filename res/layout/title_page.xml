@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:background="#086CA2"
+        >
+    <ProgressBar android:id="@+id/pb_progressBar"
+                 android:layout_marginLeft="5dp"
+                 android:layout_width="250dp"
+                 android:progressDrawable="@drawable/myprogressbar"
+                 android:layout_marginBottom="90dp"
+                 android:layout_marginRight="10dp"
+                 style="?android:attr/progressBarStyleHorizontal"
+                 android:layout_height="wrap_content"
+                 android:layout_centerInParent="true"
+                 android:layout_marginTop="15dip"
+                 android:visibility="visible"
+                 android:background="#086CA2"
+            />
+    <TextView
+            android:id="@+id/tv_load"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="7pt"
+            android:layout_centerInParent="true"
+            android:layout_marginRight="9dip"
+            android:layout_marginTop="15dip"
+            android:layout_marginLeft="15dip"
+            android:text="@string/loading"
+            android:visibility="visible"
+            android:textColor="#A65A00"
+            />
+
+    <WebView android:id="@+id/web_engine"
+             android:layout_width="0dp"
+             android:layout_height="0dp"
+             android:visibility="gone"
+            />
+    <TextView
+            android:id="@+id/tv_timeToClockOut"
+            android:visibility="gone"
+            android:layout_width="fill_parent"
+            android:layout_height="40dip"
+            android:textSize="8pt"
+            android:textColor="#FFFFFF"
+            android:layout_alignParentRight="true"
+            android:gravity="right"
+            android:text=" "/>
+    <Button
+            android:id="@+id/btn_timeToClockOut"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+
+            android:background="@drawable/text_button"
+
+            android:text=" "
+            android:textColor="#034569"
+            android:textSize="18sp"
+
+            android:shadowRadius="1"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowColor="#736F6E"
+
+            android:visibility="gone"
+            android:clickable="false"
+
+            android:layout_above="@+id/btn_curStatus"
+            />
+    <Button
+            android:id="@+id/btn_curStatus"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@+id/btn_totalHrsToday"
+
+            android:layout_margin="15dp"
+
+            android:background="@drawable/text_button"
+
+            android:text=" "
+            android:textColor="#034569"
+            android:textSize="18sp"
+
+            android:shadowRadius="1"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowColor="#736F6E"
+
+            android:visibility="gone"
+            android:clickable="false"
+
+            />
+    <Button
+            android:id="@+id/btn_totalHrsToday"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+
+            android:background="@drawable/text_button"
+
+            android:text=" "
+            android:textColor="#034569"
+            android:textSize="18sp"
+
+            android:shadowRadius="1"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowColor="#736F6E"
+
+            android:visibility="gone"
+            android:clickable="false"
+
+            android:layout_above="@+id/btn_totalHrs"
+            />
+    <Button
+            android:id="@+id/btn_totalHrs"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="15dp"
+
+            android:background="@drawable/text_button"
+
+            android:text=" "
+            android:textColor="#034569"
+            android:textSize="18sp"
+
+            android:shadowRadius="1"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowColor="#736F6E"
+
+            android:visibility="gone"
+            android:clickable="false"
+
+            android:layout_above="@+id/btn_recordTime"
+            />
+    <Button
+            android:id="@+id/btn_recordTime"
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+
+            android:layout_marginRight="15dip"
+            android:layout_marginTop="15dip"
+            android:layout_marginLeft="15dip"
+            android:layout_marginBottom="85dip"
+
+            android:background="@drawable/nice_button"
+
+            android:text="@string/recordStamp"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+
+            android:shadowRadius="1"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowColor="@android:color/black"
+
+            android:layout_alignParentBottom="true"
+
+            android:visibility="gone"
+            />
+</RelativeLayout>
