@@ -1,4 +1,4 @@
-package etime;
+package com.etime;
 
 /*
  *  This file is part of ETime.
@@ -233,7 +233,7 @@ public class ETimeActivity extends Activity {
                         //todo: remove MyCount
 	                    //autoClockOutTimer = new MyCount(countDownTime, MY_COUNT_INTERVAL);
 	                    //autoClockOutTimer.start();
-                        setOneTimeAlarm(countDownTime);
+                        setOneTimeAlarm(eightHrPunch.getCalendar().getTimeInMillis());
 	                    ETimeActivity.this.notify("Auto clock out at: "+clockTimeString);
 	                }
                 }
@@ -541,7 +541,6 @@ public class ETimeActivity extends Activity {
         intent.putExtra("password", password);
         PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
                 intent, PendingIntent.FLAG_ONE_SHOT);
-        am.set(AlarmManager.RTC_WAKEUP,
-                System.currentTimeMillis() + alarmTime, pendingIntent);
+        am.set(AlarmManager.RTC_WAKEUP,alarmTime, pendingIntent);
     }
 }

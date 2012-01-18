@@ -1,4 +1,4 @@
-package etime;
+package com.etime;
 
 /*
  *  This file is part of ETime.

@@ -22,7 +22,7 @@
                  android:layout_marginTop="15dip"
                  android:visibility="visible"
                  android:background="#086CA2"
-            ></ProgressBar>
+            />
     <TextView
             android:id="@+id/tv_loadTimeCard"
             android:layout_width="wrap_content"
