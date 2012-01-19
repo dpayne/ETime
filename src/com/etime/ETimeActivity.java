@@ -95,10 +95,12 @@ public class ETimeActivity extends Activity {
     private boolean oldAutoClockBeforePreferencePage;
     private CookieManager cookieManager;
     private Button totalHrsLoggedToday;
+    private String lastNotificationMessage;
 
     /*
     * todo: auto clock in/out for lunch
-    *
+    * get rid of webview for ETimeActivity, move clock in to httpClient
+    * round lunch time properly, right now it's rounding every timestamp
     */
 
     /**
@@ -129,6 +131,12 @@ public class ETimeActivity extends Activity {
     }
 
     private void notify(String message){
+        if (message.equalsIgnoreCase(lastNotificationMessage)) {
+            return;
+        } else {
+            lastNotificationMessage = message;
+        }
+
     	int icon = R.drawable.icon;
     	CharSequence tickerText = message;
     	long when = System.currentTimeMillis();

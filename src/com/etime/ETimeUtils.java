@@ -190,8 +190,10 @@ class ETimeUtils {
             row = row.substring(index);
             punch = new Punch();
             index = getNextPunch(row, index, punch);
-            if (index >=0)
+            if (index >=0) {
+                punch = RoundingRules.getRoundedPunch(punch);
                 punchesList.add(punch);
+            }
         } while(index > 0);
         return punchesList;
     }
