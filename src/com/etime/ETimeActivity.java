@@ -22,7 +22,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.preference.PreferenceManager;
 import android.util.Log;
 import android.view.Menu;
@@ -67,7 +66,6 @@ public class ETimeActivity extends Activity {
     private long loginTime;
 
     final private long DEF_TIMEOUT = 900000; // 15 mins in milliseconds
-    private static final long MY_COUNT_INTERVAL = 30000; // 5 mins in milliseconds
 
     private ProgressBar progressBar;
     private Button recordTime;
@@ -88,14 +86,13 @@ public class ETimeActivity extends Activity {
     private NotificationManager mManager;
     private static final int APP_ID = 1;
 
-    private MyCount autoClockOutTimer;
-
     private boolean notCreated = true;
     private boolean autoClockOutIfOkTimeCard = false;
     private boolean oldAutoClockBeforePreferencePage;
     private CookieManager cookieManager;
     private Button totalHrsLoggedToday;
     private String lastNotificationMessage;
+    private PendingIntent pendingIntentAutoClockAlarm;
 
     /*
     * todo: auto clock in/out for lunch
@@ -138,20 +135,18 @@ public class ETimeActivity extends Activity {
         }
 
     	int icon = R.drawable.icon;
-    	CharSequence tickerText = message;
-    	long when = System.currentTimeMillis();
+        long when = System.currentTimeMillis();
     	Context context = getApplicationContext();
     	CharSequence contentTitle = "ETime";
-    	CharSequence contentText = message;
-    	Intent notificationIntent = new Intent(this,ETimeActivity.class);
+        Intent notificationIntent = new Intent(this,ETimeActivity.class);
     	PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
     	mManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    	Notification notification = new Notification(icon, tickerText, when);
+    	Notification notification = new Notification(icon, message, when);
     	notification.flags |= Notification.DEFAULT_LIGHTS;
     	notification.defaults |= Notification.DEFAULT_VIBRATE;
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
-    	notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+    	notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
     	mManager.notify("ETime", APP_ID, notification);
     }
 
@@ -235,13 +230,7 @@ public class ETimeActivity extends Activity {
 
 	                long countDownTime = eightHrPunch.getCalendar().getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
 	                if (countDownTime > 0 && lastPunch.isClockIn()) {
-	                    if (autoClockOutTimer != null) {
-	                        autoClockOutTimer.cancel();
-	                    }
-                        //todo: remove MyCount
-	                    //autoClockOutTimer = new MyCount(countDownTime, MY_COUNT_INTERVAL);
-	                    //autoClockOutTimer.start();
-                        setOneTimeAlarm(eightHrPunch.getCalendar().getTimeInMillis());
+	                    setOneTimeAlarm(eightHrPunch.getCalendar().getTimeInMillis());
 	                    ETimeActivity.this.notify("Auto clock out at: "+clockTimeString);
 	                }
                 }
@@ -415,8 +404,11 @@ public class ETimeActivity extends Activity {
         password = pref.getString(PREFS_PASSWORD, null);
         AUTO_CLOCKOUT = pref.getBoolean(getString(R.string.autoclock), false);
 
-        if(AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage && autoClockOutTimer != null){
-        	autoClockOutTimer.cancel();
+        if(AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage){
+            if (pendingIntentAutoClockAlarm != null) {
+                am.cancel(pendingIntentAutoClockAlarm);
+                pendingIntentAutoClockAlarm = null;
+            }
         	ETimeActivity.this.notify("Auto clock out cancelled!");
         }
 
@@ -471,31 +463,6 @@ public class ETimeActivity extends Activity {
         }
     }
 
-    private class MyCount extends CountDownTimer {
-        public MyCount(long millisInFuture, long countDownInterval) {
-            super(millisInFuture, countDownInterval);
-        }
-
-        @Override
-        public void onFinish() {
-            Toast.makeText(getApplicationContext(), "Done with 8 hours. Time to clock out!", Toast.LENGTH_LONG).show();
-
-            if (AUTO_CLOCKOUT) {
-            	Log.v(TAG, "in onFinish");
-                autoClockOutIfOkTimeCard = true;
-                login();
-                ETimeActivity.this.notify("Auto clocked out!");
-            }else{
-            	ETimeActivity.this.notify("Auto clock out cancelled by user!");
-            }
-        }
-
-        @Override
-        public void onTick(long millisUntilFinished) {
-        }
-
-    }
-
     private void clockOut() {
         Log.v(TAG, "clocked out");
         hideTitlePageBtns();
@@ -547,8 +514,8 @@ public class ETimeActivity extends Activity {
         Intent intent = new Intent(this, TimeAlarm.class);
         intent.putExtra("username", loginName);
         intent.putExtra("password", password);
-        PendingIntent pendingIntent = PendingIntent.getBroadcast(this, 0,
+        pendingIntentAutoClockAlarm = PendingIntent.getBroadcast(this, 0,
                 intent, PendingIntent.FLAG_ONE_SHOT);
-        am.set(AlarmManager.RTC_WAKEUP,alarmTime, pendingIntent);
+        am.set(AlarmManager.RTC_WAKEUP,alarmTime, pendingIntentAutoClockAlarm);
     }
 }
