@@ -191,7 +191,6 @@ class ETimeUtils {
             punch = new Punch();
             index = getNextPunch(row, index, punch);
             if (index >=0) {
-                punch = RoundingRules.getRoundedPunch(punch);
                 punchesList.add(punch);
             }
         } while(index > 0);
@@ -384,5 +383,23 @@ class ETimeUtils {
 
         return eightHrPunch;
     }
-
+    
+    protected static void roundPunches(List<Punch> punches) {
+        Punch lastPunch = null;
+        int size = punches.size();
+        int index = 1;
+        for (Punch punch : punches) {
+            if (index==1 || index == size) {
+                punch.setCalendar((RoundingRules.getRoundedPunch(punch)).getCalendar());
+            }
+            else {
+                if (!punch.isClockIn()) {
+                    lastPunch.setCalendar((RoundingRules.getRoundedPunch(lastPunch)).getCalendar());
+                    punch.setCalendar((RoundingRules.getRoundedFromLunchTime(lastPunch, punch)).getCalendar());
+                }
+            }
+            lastPunch = punch;
+            index++;
+        }
+    }
 }

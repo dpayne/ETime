@@ -40,7 +40,6 @@ import java.util.List;
  */
 public class TimeAlarm extends BroadcastReceiver {
 
-    private NotificationManager nm;
     private WebView webView;
     private String loginName;
     private String password;
@@ -52,7 +51,6 @@ public class TimeAlarm extends BroadcastReceiver {
     private static final String LOGIN_FAILED = "Logon attempt failed";
     private List<Punch> punches;
     private DefaultHttpClient httpClient;
-    private static final long fifteenMinutes = 900000;
     private static final String TIMESTAMP_RECORD_URL = "https://eet.adp.com/wfc/applications/wtk/html/ess/timestamp-record.jsp";
 
     @Override

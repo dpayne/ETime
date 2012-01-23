@@ -14,6 +14,9 @@ package com.etime;
  *
  *  You should have received a copy of the GNU General Public License
  *  along with ETime.  If not, see <http://www.gnu.org/licenses/>.
+ *
+ *  Much of the code in RoundingRules class was originally written by David Keifer.
+ *  Code is used with permission from D. Keifer
  */
 
 import java.util.Calendar;
@@ -31,33 +34,32 @@ public class RoundingRules {
         return punch;
     }
 
-    public static Calendar getRoundedFromLunchTime(Calendar lunchStart, Calendar lunchEnd) {
-//        Calendar roundedLunchStart = getRoundedPunch(lunchStart);
-//
-//        // The minute value after it was rounded to ADP recorded time.
-//        int roundedLunchMinutes = roundedLunchStart.get(Calendar.MINUTE);
-//        // The minute value before rounding
-//        int startMinutes = lunchStart.get(Calendar.MINUTE);
-//
-//        // Rounded - Actual = Offset minutes
-//        int offset = roundedLunchMinutes - startMinutes; //(15m - 10m = 5m to add to clocked in time);
-//
-//        // Get 
-//        int endMinutes = lunchEnd.get(Calendar.MINUTE);
-//        int endHours = lunchEnd.get(Calendar.HOUR);
-//
-//        int finalMinutes = endMinutes + offset;
-//
-//        if(finalMinutes >= 60)
-//        {
-//            finalMinutes -= 60;
-//            endHours += 1;
-//        }
-//
-//        lunchEnd.set(Calendar.HOUR, endHours);
-//        lunchEnd.set(Calendar.MINUTE, finalMinutes);
-//
-//        return lunchEnd;
-        return null;
+    public static Punch getRoundedFromLunchTime(Punch lunchStart, Punch lunchEnd) {
+        Punch roundedLunchStart = getRoundedPunch(lunchStart);
+
+        // The minute value after it was rounded to ADP recorded time.
+        int roundedLunchMinutes = roundedLunchStart.getCalendar().get(Calendar.MINUTE);
+        // The minute value before rounding
+        int startMinutes = lunchStart.getCalendar().get(Calendar.MINUTE);
+
+        // Rounded - Actual = Offset minutes
+        int offset = roundedLunchMinutes - startMinutes; //(15m - 10m = 5m to add to clocked in time);
+
+        // Get 
+        int endMinutes = lunchEnd.getCalendar().get(Calendar.MINUTE);
+        int endHours = lunchEnd.getCalendar().get(Calendar.HOUR);
+
+        int finalMinutes = endMinutes + offset;
+
+        if(finalMinutes >= 60)
+        {
+            finalMinutes -= 60;
+            endHours += 1;
+        }
+
+        lunchEnd.getCalendar().set(Calendar.HOUR, endHours);
+        lunchEnd.getCalendar().set(Calendar.MINUTE, finalMinutes);
+
+        return lunchEnd;
     }
 }

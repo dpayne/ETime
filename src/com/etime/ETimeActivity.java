@@ -168,6 +168,7 @@ public class ETimeActivity extends Activity {
         textViewTotalHrs.setText("Total Hrs this pay period: " + totalHrs);
         totalHrsLoggedToday.setText("Total Hrs Today: " + ETimeUtils.todaysTotalHrsLogged(punches));
         if (punches.size() > 0) {
+            ETimeUtils.roundPunches(punches);
             lastPunch = punches.get(punches.size() - 1);
             if (lastPunch != null) {
                 StringBuilder sb = new StringBuilder("Clocked ");
@@ -195,6 +196,7 @@ public class ETimeActivity extends Activity {
                 curStatus.setText(sb.toString());
 
                 Punch eightHrPunch = ETimeUtils.getEightHrPunch(punches);
+                eightHrPunch = RoundingRules.getRoundedPunch(eightHrPunch);
                 Calendar eightHrPunchCalendar = eightHrPunch.getCalendar();
 
                 StringBuilder stringBuilder = new StringBuilder();
@@ -404,7 +406,7 @@ public class ETimeActivity extends Activity {
         password = pref.getString(PREFS_PASSWORD, null);
         AUTO_CLOCKOUT = pref.getBoolean(getString(R.string.autoclock), false);
 
-        if(AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage){
+        if(AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage && !AUTO_CLOCKOUT){
             if (pendingIntentAutoClockAlarm != null) {
                 am.cancel(pendingIntentAutoClockAlarm);
                 pendingIntentAutoClockAlarm = null;
