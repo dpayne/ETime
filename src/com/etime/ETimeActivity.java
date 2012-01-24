@@ -33,6 +33,7 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import com.commonsware.cwac.wakeful.WakefulIntentService;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -123,6 +124,7 @@ public class ETimeActivity extends Activity {
     @Override
     public void onDestroy() {
         super.onDestroy();
+
         if(mManager != null)
         	mManager.cancel(APP_ID);
     }
@@ -435,23 +437,17 @@ public class ETimeActivity extends Activity {
             Log.v(TAG, url);
             if (url.equals(TIMESTAMP_URL)) {
                 hideProgressBar();
-
                 showTitlePageBtns();
             } else if (url.equals(TIMESTAMP_SUCCESS)) {
                 hideProgressBar();
-
                 parseTimeCard();
                 showTitlePageBtns();
                 Toast.makeText(getApplicationContext(), "Time Stamp Successful", Toast.LENGTH_LONG).show();
-
             } else if (url.equals(TIMECARD_URL)) {
                 hideProgressBar();
-
                 webview.setVisibility(View.VISIBLE);
-
             } else if (url.equals(LOGIN_FAILED_URL) || url.equals(LOGIN_FAILED_URL_2)) {
                 hideProgressBar();
-
                 Toast.makeText(getApplicationContext(), "Invalid Username/Password", Toast.LENGTH_LONG).show();
                 startPreferencesPage();
             }
@@ -513,11 +509,13 @@ public class ETimeActivity extends Activity {
     }
 
     public void setOneTimeAlarm(long alarmTime) {
-        Intent intent = new Intent(this, TimeAlarm.class);
-        intent.putExtra("username", loginName);
-        intent.putExtra("password", password);
-        pendingIntentAutoClockAlarm = PendingIntent.getBroadcast(this, 0,
-                intent, PendingIntent.FLAG_ONE_SHOT);
-        am.set(AlarmManager.RTC_WAKEUP,alarmTime, pendingIntentAutoClockAlarm);
+        ETimeAlarmListener eTimeAlarmListener = new ETimeAlarmListener();
+        Log.v(TAG, "Username in setOneTimeAlarm is " + loginName);
+        eTimeAlarmListener.setLoginName(loginName);
+        eTimeAlarmListener.setPassword(password);
+        eTimeAlarmListener.setTime(alarmTime);
+
+        WakefulIntentService.scheduleAlarms(eTimeAlarmListener, this, true);
     }
+
 }
