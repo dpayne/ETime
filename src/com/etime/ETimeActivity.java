@@ -33,7 +33,6 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.commonsware.cwac.wakeful.WakefulIntentService;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -43,6 +42,7 @@ import java.util.List;
 
 public class ETimeActivity extends Activity {
     private AlarmManager am;
+    private PendingIntent pendingIntentAutoClockAlarm;
 
     private String PREFS_USERNAME = "username";
     private String PREFS_PASSWORD = "password";
@@ -93,7 +93,6 @@ public class ETimeActivity extends Activity {
     private CookieManager cookieManager;
     private Button totalHrsLoggedToday;
     private String lastNotificationMessage;
-    private PendingIntent pendingIntentAutoClockAlarm;
 
     /*
     * todo: auto clock in/out for lunch
@@ -125,31 +124,31 @@ public class ETimeActivity extends Activity {
     public void onDestroy() {
         super.onDestroy();
 
-        if(mManager != null)
-        	mManager.cancel(APP_ID);
+        if (mManager != null)
+            mManager.cancel(APP_ID);
     }
 
-    private void notify(String message){
+    private void notify(String message) {
         if (message.equalsIgnoreCase(lastNotificationMessage)) {
             return;
         } else {
             lastNotificationMessage = message;
         }
 
-    	int icon = R.drawable.icon;
+        int icon = R.drawable.icon;
         long when = System.currentTimeMillis();
-    	Context context = getApplicationContext();
-    	CharSequence contentTitle = "ETime";
-        Intent notificationIntent = new Intent(this,ETimeActivity.class);
-    	PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+        Context context = getApplicationContext();
+        CharSequence contentTitle = "ETime";
+        Intent notificationIntent = new Intent(this, ETimeActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
-    	mManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    	Notification notification = new Notification(icon, message, when);
-    	notification.flags |= Notification.DEFAULT_LIGHTS;
-    	notification.defaults |= Notification.DEFAULT_VIBRATE;
+        mManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        Notification notification = new Notification(icon, message, when);
+        notification.flags |= Notification.DEFAULT_LIGHTS;
+        notification.defaults |= Notification.DEFAULT_VIBRATE;
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
-    	notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
-    	mManager.notify("ETime", APP_ID, notification);
+        notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
+        mManager.notify("ETime", APP_ID, notification);
     }
 
     protected void startPreferencesPage() {
@@ -198,7 +197,6 @@ public class ETimeActivity extends Activity {
                 curStatus.setText(sb.toString());
 
                 Punch eightHrPunch = ETimeUtils.getEightHrPunch(punches);
-                eightHrPunch = RoundingRules.getRoundedPunch(eightHrPunch);
                 Calendar eightHrPunchCalendar = eightHrPunch.getCalendar();
 
                 StringBuilder stringBuilder = new StringBuilder();
@@ -210,33 +208,33 @@ public class ETimeActivity extends Activity {
 
                 int min = eightHrPunchCalendar.get(Calendar.MINUTE);
                 if (min < 10) {
-                	clockTimeString.append("0");
+                    clockTimeString.append("0");
                 }
                 clockTimeString.append(Integer.toString(min));
 
                 if (eightHrPunchCalendar.get(Calendar.AM_PM) == Calendar.AM) {
-                	clockTimeString.append(" AM");
+                    clockTimeString.append(" AM");
                 } else {
-                	clockTimeString.append(" PM");
+                    clockTimeString.append(" PM");
                 }
 
                 stringBuilder.append(clockTimeString);
                 timeToClockOut.setText(stringBuilder.toString());
 
-                if(AUTO_CLOCKOUT){
-	                if (autoClockOutIfOkTimeCard && lastPunch.isClockIn()) {
-	                    clockOut();
-	                    autoClockOutIfOkTimeCard = false;
+                if (AUTO_CLOCKOUT) {
+                    if (autoClockOutIfOkTimeCard && lastPunch.isClockIn()) {
+                        clockOut();
+                        autoClockOutIfOkTimeCard = false;
 
-	                    return;
-	                }
-	                autoClockOutIfOkTimeCard = false;
+                        return;
+                    }
+                    autoClockOutIfOkTimeCard = false;
 
-	                long countDownTime = eightHrPunch.getCalendar().getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
-	                if (countDownTime > 0 && lastPunch.isClockIn()) {
-	                    setOneTimeAlarm(eightHrPunch.getCalendar().getTimeInMillis());
-	                    ETimeActivity.this.notify("Auto clock out at: "+clockTimeString);
-	                }
+                    long countDownTime = eightHrPunch.getCalendar().getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
+                    if (countDownTime > 0 && lastPunch.isClockIn()) {
+                        setOneTimeAlarm(eightHrPunch.getCalendar().getTimeInMillis());
+                        ETimeActivity.this.notify("Auto clock out at: " + clockTimeString);
+                    }
                 }
             }
         }
@@ -368,7 +366,7 @@ public class ETimeActivity extends Activity {
     }
 
     protected void parseTimeCard() {
-    	Log.v(TAG, "in timecard");
+        Log.v(TAG, "in timecard");
         TimeCardAsyncTask timeCardAsyncTask = new TimeCardAsyncTask();
         timeCardAsyncTask.setActivity((ETimeActivity) activity);
         timeCardAsyncTask.setHttpClient(httpClient);
@@ -408,12 +406,12 @@ public class ETimeActivity extends Activity {
         password = pref.getString(PREFS_PASSWORD, null);
         AUTO_CLOCKOUT = pref.getBoolean(getString(R.string.autoclock), false);
 
-        if(AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage && !AUTO_CLOCKOUT){
+        if (AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage && !AUTO_CLOCKOUT) {
             if (pendingIntentAutoClockAlarm != null) {
                 am.cancel(pendingIntentAutoClockAlarm);
                 pendingIntentAutoClockAlarm = null;
             }
-        	ETimeActivity.this.notify("Auto clock out cancelled!");
+            ETimeActivity.this.notify("Auto clock out cancelled!");
         }
 
         return (loginName != null && !loginName.equals("")) && (password != null && !password.equals(""));
@@ -462,7 +460,6 @@ public class ETimeActivity extends Activity {
     }
 
     private void clockOut() {
-        Log.v(TAG, "clocked out");
         hideTitlePageBtns();
         showProgressBar();
         webview.loadUrl(TIMESTAMP_RECORD_URL);
@@ -496,26 +493,26 @@ public class ETimeActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-       Log.d(TAG, "onBackPressed Called");
-       SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(activity);
-       if(pref.getBoolean(getString(R.string.keepInBackground), true)){
-	       Intent setIntent = new Intent(Intent.ACTION_MAIN);
-	       setIntent.addCategory(Intent.CATEGORY_HOME);
-	       setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-	       startActivity(setIntent);
-       }else{
-    	   super.onBackPressed();
-       }
+        Log.d(TAG, "onBackPressed Called");
+        SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(activity);
+        if (pref.getBoolean(getString(R.string.keepInBackground), true)) {
+            Intent setIntent = new Intent(Intent.ACTION_MAIN);
+            setIntent.addCategory(Intent.CATEGORY_HOME);
+            setIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(setIntent);
+        } else {
+            super.onBackPressed();
+        }
     }
 
     public void setOneTimeAlarm(long alarmTime) {
-        ETimeAlarmListener eTimeAlarmListener = new ETimeAlarmListener();
-        Log.v(TAG, "Username in setOneTimeAlarm is " + loginName);
-        eTimeAlarmListener.setLoginName(loginName);
-        eTimeAlarmListener.setPassword(password);
-        eTimeAlarmListener.setTime(alarmTime);
-
-        WakefulIntentService.scheduleAlarms(eTimeAlarmListener, this, true);
+        Log.v(TAG, "in setOneTimeAlarm");
+        Intent intent = new Intent(this, TimeAlarm.class);
+        intent.putExtra("username", loginName);
+        intent.putExtra("password", password);
+        pendingIntentAutoClockAlarm = PendingIntent.getBroadcast(this, 0,
+                intent, PendingIntent.FLAG_ONE_SHOT);
+        am.set(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntentAutoClockAlarm);
     }
 
 }

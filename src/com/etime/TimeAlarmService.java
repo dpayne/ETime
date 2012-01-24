@@ -1,14 +1,14 @@
 package com.etime;
 
+import android.app.IntentService;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.os.PowerManager;
 import android.util.Log;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
-import com.commonsware.cwac.wakeful.WakefulIntentService;
+import android.webkit.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.cookie.Cookie;
@@ -19,15 +19,19 @@ import java.util.List;
 
 /**
  * User: dpayne2
- * Date: 1/23/12
- * Time: 4:02 PM
+ * Date: 1/24/12
+ * Time: 9:19 AM
  */
-public class ETimeAlarmService extends WakefulIntentService {
-    private static final int APP_ID = 1;
+public class TimeAlarmService extends IntentService {
+    private static volatile PowerManager.WakeLock lockStatic = null;
+    private static volatile Context lockContext = null;
+    static final String NAME = "com.etime.TimeAlarmService";
+    NotificationManager nm;
 
+    private WebView webView;
     private String loginName;
     private String password;
-    private static final String TAG = "Alarm-4321";
+    private static final String TAG = "TimeAlarmService-4321";
     private static final String TIMECARD_URL = "https://eet.adp.com/wfc/applications/mss/esstimecard.do";
     private static final String LOGIN_URL = "https://eet.adp.com/public/etime/html.html";
     private static final String LOGIN_URL_STEP2 = "https://eet.adp.com/wfc/SSOLogon/logonWithUID?IntendedURL=/wfc/applications/suitenav/navigation.do?ESS=true";
@@ -36,60 +40,33 @@ public class ETimeAlarmService extends WakefulIntentService {
     private List<Punch> punches;
     private DefaultHttpClient httpClient;
     private static final String TIMESTAMP_RECORD_URL = "https://eet.adp.com/wfc/applications/wtk/html/ess/timestamp-record.jsp";
+    private static final int APP_ID = 1;
 
-
-    public ETimeAlarmService() {
-        super("ETimeAlarmService");
+    public TimeAlarmService() {
+        super("TimeAlarmService");
     }
 
-    @Override
-    protected void doWakefulWork(Intent intent) {
-        boolean retval;
-
-        loginName = intent.getStringExtra("username");
-        password = intent.getStringExtra("password");
-
-        retval = login();
-
-        if (!retval) {
-            notifyAutoClockOutFailure(this);
-        }
-
-        parseTimeCard();
-
-        retval = clockOut();
-
-
-        if (!retval) {
-            notifyAutoClockOutFailure(this);
-        } else {
-            notifyAutoClockOutSuccess(this);
-        }
-    }
-
-    private void notification(Context context, String notifcationString) {
-        NotificationManager nm;
-        nm = (NotificationManager) context
-                .getSystemService(Context.NOTIFICATION_SERVICE);
+    private void notification(String notifcationString) {
         CharSequence from = "ETime";
-        PendingIntent contentIntent = PendingIntent.getActivity(context, 0,
+        PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 new Intent(), 0);
         Notification notif = new Notification(R.drawable.icon,
                 notifcationString, System.currentTimeMillis());
 
         notif.flags |= Notification.DEFAULT_LIGHTS;
-        notif.flags |= Notification.DEFAULT_VIBRATE;
+        notif.defaults |= Notification.DEFAULT_VIBRATE;
+        notif.flags |= Notification.FLAG_ONGOING_EVENT;
 
-        notif.setLatestEventInfo(context, from, notifcationString, contentIntent);
+        notif.setLatestEventInfo(this, from, notifcationString, contentIntent);
         nm.notify("ETime", APP_ID, notif);
     }
 
-    private void notifyAutoClockOutSuccess(Context context) {
-        notification(context, "Auto clock out successful!!!");
+    private void notifyAutoClockOutSuccess() {
+        notification("Auto clock out successful!!!");
     }
 
-    private void notifyAutoClockOutFailure(Context context) {
-        notification(context, "Auto clock out failed!!!");
+    private void notifyAutoClockOutFailure() {
+        notification("Auto clock out failed!!!");
     }
 
     private boolean clockOut() {
@@ -156,12 +133,11 @@ public class ETimeAlarmService extends WakefulIntentService {
             }
             CookieSyncManager.getInstance().sync();
         }
-
         return true;
     }
 
     private CookieManager getSyncedCookieManager() {
-        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(this);
+        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(webView.getContext());
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         cookieManager.removeSessionCookie();
@@ -188,6 +164,73 @@ public class ETimeAlarmService extends WakefulIntentService {
         }
 
         return true;
+    }
+
+    @Override
+    protected void onHandleIntent(Intent intent) {
+        try {
+            nm = (NotificationManager) this
+                    .getSystemService(Context.NOTIFICATION_SERVICE);
+            Log.v(TAG, "in onHandleIntent in TimeAlarmService");
+            boolean retval;
+            webView = new WebView(this);
+            webView = ETimeUtils.setupWebView(webView, new MyWebViewClient(), new MyWebChromeClient());
+
+            loginName = intent.getStringExtra("username");
+            password = intent.getStringExtra("password");
+
+            retval = login();
+
+            if (!retval) {
+                notifyAutoClockOutFailure();
+            }
+
+            parseTimeCard();
+            notification("login name is " + loginName);
+
+            retval = clockOut();
+
+            if (!retval) {
+                notifyAutoClockOutFailure();
+            } else {
+                notifyAutoClockOutSuccess();
+            }
+        } finally {
+            TimeAlarmService.getLock().release();
+        }
+    }
+
+    public static void setLockContext(Context context) {
+        lockContext = context;
+    }
+
+    private class MyWebViewClient extends WebViewClient {
+        @Override
+        public void onReceivedHttpAuthRequest(WebView view,
+                                              HttpAuthHandler handler, String host, String realm) {
+            handler.proceed(loginName, password);
+        }
+
+        @Override
+        public boolean shouldOverrideUrlLoading(WebView view, String url) {
+            view.loadUrl(url);
+            return true;
+        }
+    }
+
+    private class MyWebChromeClient extends WebChromeClient {
+    }
+
+    synchronized public static PowerManager.WakeLock getLock() {
+        if (lockStatic == null && lockContext != null) {
+            PowerManager mgr = (PowerManager) lockContext.getSystemService(Context.POWER_SERVICE);
+
+            lockStatic = mgr.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
+                    NAME);
+            lockStatic.setReferenceCounted(true);
+        }
+
+        return (lockStatic);
     }
 
 }

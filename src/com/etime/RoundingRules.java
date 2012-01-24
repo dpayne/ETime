@@ -23,10 +23,9 @@ import java.util.Calendar;
 
 public class RoundingRules {
 
-    public static Punch getRoundedPunch(Punch punch)
-    {
+    public static Punch getRoundedPunch(Punch punch) {
         Calendar time = punch.getCalendar();
-        int minutes = (int) (Math.round(time.get(Calendar.MINUTE)/15.0)*15);
+        int minutes = (int) (Math.round(time.get(Calendar.MINUTE) / 15.0) * 15);
 
         time.set(Calendar.MINUTE, minutes);
         punch.setCalendar(time);
@@ -51,8 +50,7 @@ public class RoundingRules {
 
         int finalMinutes = endMinutes + offset;
 
-        if(finalMinutes >= 60)
-        {
+        if (finalMinutes >= 60) {
             finalMinutes -= 60;
             endHours += 1;
         }

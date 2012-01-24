@@ -92,7 +92,7 @@ class ETimeUtils {
         return page;
     }
 
-     protected static WebView setupWebView(WebView webview, WebViewClient webViewClient, WebChromeClient webChromeClient) {
+    protected static WebView setupWebView(WebView webview, WebViewClient webViewClient, WebChromeClient webChromeClient) {
 
         webview.getSettings().setJavaScriptEnabled(true);
         webview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
@@ -106,7 +106,6 @@ class ETimeUtils {
 
         return webview;
     }
-
 
 
     protected static double getTotalsHrs(String page) {
@@ -177,6 +176,7 @@ class ETimeUtils {
         } catch (Exception e) {
             Log.w(TAG, e);
         }
+
         return punchesList;
 
     }
@@ -190,10 +190,10 @@ class ETimeUtils {
             row = row.substring(index);
             punch = new Punch();
             index = getNextPunch(row, index, punch);
-            if (index >=0) {
+            if (index >= 0) {
                 punchesList.add(punch);
             }
-        } while(index > 0);
+        } while (index > 0);
         return punchesList;
     }
 
@@ -383,16 +383,14 @@ class ETimeUtils {
 
         return eightHrPunch;
     }
-    
+
     protected static void roundPunches(List<Punch> punches) {
         Punch lastPunch = null;
-        int size = punches.size();
         int index = 1;
         for (Punch punch : punches) {
-            if (index==1 || index == size) {
+            if (index == 1) {
                 punch.setCalendar((RoundingRules.getRoundedPunch(punch)).getCalendar());
-            }
-            else {
+            } else {
                 if (!punch.isClockIn()) {
                     lastPunch.setCalendar((RoundingRules.getRoundedPunch(lastPunch)).getCalendar());
                     punch.setCalendar((RoundingRules.getRoundedFromLunchTime(lastPunch, punch)).getCalendar());

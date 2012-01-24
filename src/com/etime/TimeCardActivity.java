@@ -43,7 +43,7 @@ public class TimeCardActivity extends Activity {
     private String TIMECARD_URL;
 
     private WebView webview;
-    
+
     private static final String TAG = "TimeCardActivity-4321";
     private static String LOGIN_URL;
     private String TIMESTAMP_URL;
@@ -61,8 +61,7 @@ public class TimeCardActivity extends Activity {
         progressBar = (ProgressBar) findViewById(R.id.pb_timecard);
         loadingText = (TextView) findViewById(R.id.tv_loadTimeCard);
 
-        if(extras !=null)
-        {
+        if (extras != null) {
             loginName = extras.getString("loginName");
             password = extras.getString("password");
         }
@@ -73,7 +72,7 @@ public class TimeCardActivity extends Activity {
     }
 
     private WebView setupWebView() {
-        
+
         webview = (WebView) findViewById(R.id.web_timecard);
 
         webview.getSettings().setJavaScriptEnabled(true);
@@ -88,7 +87,7 @@ public class TimeCardActivity extends Activity {
 
         return webview;
     }
-    
+
     private void hideProgressBar() {
         progressBar.setVisibility(View.GONE);
         loadingText.setVisibility(View.GONE);
@@ -127,7 +126,7 @@ public class TimeCardActivity extends Activity {
     }
 
 
-    private class MyWebChromeClient extends  WebChromeClient{
+    private class MyWebChromeClient extends WebChromeClient {
         public void onProgressChanged(WebView view, int progress) {
             progressBar.setProgress(progress);
         }

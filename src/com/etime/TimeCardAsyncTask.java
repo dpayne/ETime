@@ -57,7 +57,7 @@ public class TimeCardAsyncTask extends AsyncTask<Void, Integer, Boolean> {
 
     @Override
     protected Boolean doInBackground(Void... params) {
-        String page =  ETimeUtils.getHtmlPage(httpClient, TIMECARD_URL);
+        String page = ETimeUtils.getHtmlPage(httpClient, TIMECARD_URL);
         totalHrs = ETimeUtils.getTotalsHrs(page);
         punches = ETimeUtils.getTodaysPunches(page);
         status = !punches.isEmpty();

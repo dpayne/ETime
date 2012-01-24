@@ -37,9 +37,9 @@ import java.util.List;
  */
 public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
 
-	private String PREFS_USERNAME = "username";
-	private String PREF_LOGINTIME = "loginTime";
-	
+    private String PREFS_USERNAME = "username";
+    private String PREF_LOGINTIME = "loginTime";
+
     private ProgressBar progressBar;
     private ETimeActivity activity;
     private DefaultHttpClient httpClient;
