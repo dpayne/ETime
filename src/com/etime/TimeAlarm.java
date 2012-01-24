@@ -28,22 +28,26 @@ import android.util.Log;
  * Time: 11:03 PM
  */
 public class TimeAlarm extends BroadcastReceiver {
-    private static final String TAG = "TimeAlarm-4321";
+
+	private String loginName;
+    private String password;
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        TimeAlarmService.setLockContext(context);
-        TimeAlarmService.getLock().acquire();
-
-        String loginName = intent.getStringExtra("username");
-        String password = intent.getStringExtra("password");
-
-        Log.v(TAG, "in onReceive in TimeAlarm");
-
-        Intent intentForService = new Intent(context, TimeAlarmService.class);
-        intentForService.putExtra("username", loginName);
-        intentForService.putExtra("password", password);
-        context.startService(intentForService);
+    	Log.v("ETime-TimeAlarm", "In TimeAlarm onReceive");
+    	
+    	loginName = intent.getStringExtra("username");
+        password = intent.getStringExtra("password");
+        Log.v("ETime-TimeAlarm", "loginName="+loginName);
+        
+    	Intent alarmIntent = new Intent(context, AlarmIntentService.class);
+    	alarmIntent.putExtra(AlarmIntentService.USERNAME, loginName);
+    	alarmIntent.putExtra(AlarmIntentService.PASSWORD, password);
+    	AlarmIntentService.getLock(context).acquire();
+    	context.startService(alarmIntent);    	
+    	
     }
+
+   
 }
 
