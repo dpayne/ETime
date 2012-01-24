@@ -28,7 +28,6 @@ public class TimeAlarmService extends IntentService {
     static final String NAME = "com.etime.TimeAlarmService";
     NotificationManager nm;
 
-    private WebView webView;
     private String loginName;
     private String password;
     private static final String TAG = "TimeAlarmService-4321";
@@ -137,7 +136,7 @@ public class TimeAlarmService extends IntentService {
     }
 
     private CookieManager getSyncedCookieManager() {
-        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(webView.getContext());
+        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(this);
         CookieManager cookieManager = CookieManager.getInstance();
         cookieManager.setAcceptCookie(true);
         cookieManager.removeSessionCookie();
@@ -173,8 +172,6 @@ public class TimeAlarmService extends IntentService {
                     .getSystemService(Context.NOTIFICATION_SERVICE);
             Log.v(TAG, "in onHandleIntent in TimeAlarmService");
             boolean retval;
-            webView = new WebView(this);
-            webView = ETimeUtils.setupWebView(webView, new MyWebViewClient(), new MyWebChromeClient());
 
             loginName = intent.getStringExtra("username");
             password = intent.getStringExtra("password");
@@ -202,23 +199,6 @@ public class TimeAlarmService extends IntentService {
 
     public static void setLockContext(Context context) {
         lockContext = context;
-    }
-
-    private class MyWebViewClient extends WebViewClient {
-        @Override
-        public void onReceivedHttpAuthRequest(WebView view,
-                                              HttpAuthHandler handler, String host, String realm) {
-            handler.proceed(loginName, password);
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            view.loadUrl(url);
-            return true;
-        }
-    }
-
-    private class MyWebChromeClient extends WebChromeClient {
     }
 
     synchronized public static PowerManager.WakeLock getLock() {
