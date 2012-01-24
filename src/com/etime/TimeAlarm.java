@@ -40,10 +40,10 @@ public class TimeAlarm extends BroadcastReceiver {
         password = intent.getStringExtra("password");
         Log.v("ETime-TimeAlarm", "loginName="+loginName);
         
-    	Intent alarmIntent = new Intent(context, AlarmIntentService.class);
-    	alarmIntent.putExtra(AlarmIntentService.USERNAME, loginName);
-    	alarmIntent.putExtra(AlarmIntentService.PASSWORD, password);
-    	AlarmIntentService.getLock(context).acquire();
+    	Intent alarmIntent = new Intent(context, TimeAlarmService.class);
+    	alarmIntent.putExtra(TimeAlarmService.USERNAME, loginName);
+    	alarmIntent.putExtra(TimeAlarmService.PASSWORD, password);
+    	TimeAlarmService.getLock(context).acquire();
     	context.startService(alarmIntent);    	
     	
     }
