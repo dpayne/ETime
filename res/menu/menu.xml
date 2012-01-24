@@ -4,6 +4,9 @@
     <item android:id="@+id/menu_preferences"
           android:title="Preferences"
           android:icon="@drawable/ic_menu_preferences"/>
+    <item android:id="@+id/menu_refresh"
+          android:title="Refresh"
+          android:icon="@drawable/ic_menu_refresh"/>
     <item android:id="@+id/menu_timecard"
           android:title="Time Card"
           android:icon="@drawable/ic_menu_today"
