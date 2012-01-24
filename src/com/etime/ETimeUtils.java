@@ -41,8 +41,6 @@ import java.util.List;
 class ETimeUtils {
     private static final String TAG = "ETimeUtils-4321";
 
-    private static final String DAILY_TOTAL_STR = "DailyTotal";
-    private static final String DIV = "<div>";
     private static final String DIV_CLOSE = "</div>";
     private static final String TABLE_ROW_TAG = "<tr class";
     private static final String PUNCH_TAG = "Punch\">";
@@ -258,48 +256,6 @@ class ETimeUtils {
             return -1;
         }
     }
-
-    private static double findLastDailyTotal(String page) {
-        int indexOfLastDailyTotal = findIndexOfLastDailyTotal(page);
-        int endOfLastDailyTotal = page.indexOf(DIV_CLOSE, indexOfLastDailyTotal);
-
-        return Double.parseDouble(page.substring(indexOfLastDailyTotal, endOfLastDailyTotal));
-    }
-
-    private static int findIndexOfLastDailyTotal(String page) {
-        int indexOfPrevDailyTotal = 0;
-        int curIndexOfDailyTotal = 0;
-        int indexOfNextDiv;
-        int indexOfNextDivClose;
-
-        String dailyTotalStr;
-
-        do {
-            curIndexOfDailyTotal = page.indexOf(DAILY_TOTAL_STR, curIndexOfDailyTotal + 1);
-            if (curIndexOfDailyTotal < 0)
-                break;
-
-            indexOfNextDiv = page.indexOf(DIV, curIndexOfDailyTotal);
-            indexOfNextDivClose = page.indexOf(DIV_CLOSE, indexOfNextDiv);
-
-            dailyTotalStr = page.substring(indexOfNextDiv + DIV.length(), indexOfNextDivClose);
-            if (dailyTotalStr.equals(HTML_SPACE)) //space in html
-            {
-                continue;
-            }
-
-            try {
-                indexOfPrevDailyTotal = indexOfNextDiv + DIV.length();
-            } catch (Exception e) {
-                Log.e(TAG, "Error in findLastIndexOfDailyTotal while parsing double");
-            }
-
-            //check if div is empty
-        } while (curIndexOfDailyTotal >= 0);
-
-        return indexOfPrevDailyTotal;
-    }
-
 
     protected static Punch getLastClockIn(List<Punch> punches) {
         Punch lastClockIn = null;

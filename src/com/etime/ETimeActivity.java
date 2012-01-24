@@ -55,7 +55,6 @@ public class ETimeActivity extends Activity {
     private String password = null;
 
     private String TAG = "ETime-4321";
-    private String PREF_LUNCH = "lunch";
 
     private String TIMESTAMP_RECORD_URL;
     private String TIMECARD_URL;
@@ -93,12 +92,6 @@ public class ETimeActivity extends Activity {
     private CookieManager cookieManager;
     private Button totalHrsLoggedToday;
     private String lastNotificationMessage;
-
-    /*
-    * todo: auto clock in/out for lunch
-    * get rid of webview for ETimeActivity, move clock in to httpClient
-    * round lunch time properly, right now it's rounding every timestamp
-    */
 
     /**
      * Called when the activity is first created.
