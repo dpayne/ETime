@@ -23,6 +23,7 @@ import java.util.List;
  * Time: 4:02 PM
  */
 public class ETimeAlarmService extends WakefulIntentService {
+    private static final int APP_ID = 1;
 
     private String loginName;
     private String password;
@@ -75,8 +76,12 @@ public class ETimeAlarmService extends WakefulIntentService {
                 new Intent(), 0);
         Notification notif = new Notification(R.drawable.icon,
                 notifcationString, System.currentTimeMillis());
+
+        notif.flags |= Notification.DEFAULT_LIGHTS;
+        notif.flags |= Notification.DEFAULT_VIBRATE;
+
         notif.setLatestEventInfo(context, from, notifcationString, contentIntent);
-        nm.notify(1, notif);
+        nm.notify("ETime", APP_ID, notif);
     }
 
     private void notifyAutoClockOutSuccess(Context context) {
