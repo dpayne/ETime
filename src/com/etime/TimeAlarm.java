@@ -45,7 +45,7 @@ public class TimeAlarm extends BroadcastReceiver {
     	alarmIntent.putExtra(TimeAlarmService.PASSWORD, password);
     	TimeAlarmService.getLock(context).acquire();
     	context.startService(alarmIntent);    	
-    	
+        
     }
 
    
