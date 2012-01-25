@@ -474,6 +474,10 @@ public class ETimeActivity extends Activity {
             case R.id.menu_timecard:
                 startTimeCardActivity();
                 break;
+            case R.id.menu_refresh:
+                loginTime = 0;
+                onResume();
+                break;
         }
         return true;
     }
@@ -486,7 +490,6 @@ public class ETimeActivity extends Activity {
 
     @Override
     public void onBackPressed() {
-        Log.d(TAG, "onBackPressed Called");
         SharedPreferences pref = PreferenceManager.getDefaultSharedPreferences(activity);
         if (pref.getBoolean(getString(R.string.keepInBackground), true)) {
             Intent setIntent = new Intent(Intent.ACTION_MAIN);
@@ -499,7 +502,6 @@ public class ETimeActivity extends Activity {
     }
 
     public void setOneTimeAlarm(long alarmTime) {
-        Log.v(TAG, "in setOneTimeAlarm");
         Intent intent = new Intent(this, TimeAlarm.class);
         intent.putExtra("username", loginName);
         intent.putExtra("password", password);
