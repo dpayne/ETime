@@ -359,7 +359,6 @@ public class ETimeActivity extends Activity {
     }
 
     protected void parseTimeCard() {
-        Log.v(TAG, "in timecard");
         TimeCardAsyncTask timeCardAsyncTask = new TimeCardAsyncTask();
         timeCardAsyncTask.setActivity((ETimeActivity) activity);
         timeCardAsyncTask.setHttpClient(httpClient);
