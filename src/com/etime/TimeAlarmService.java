@@ -56,7 +56,7 @@ public class TimeAlarmService extends IntentService {
             retval = login();
 
             if (!retval) {
-                notifyAutoClockOutFailure(this.getApplicationContext());
+                notifyAutoClockOutFailure();
             }
 
             parseTimeCard();
@@ -64,16 +64,16 @@ public class TimeAlarmService extends IntentService {
             retval = clockOut();
 
             if (!retval) {
-                notifyAutoClockOutFailure(this.getApplicationContext());
+                notifyAutoClockOutFailure();
             } else {
-                notifyAutoClockOutSuccess(this.getApplicationContext());
+                notifyAutoClockOutSuccess();
             }
         } finally {
             getLock().release();
         }
     }
 
-    private void notification(Context context, String notifcationString) {
+    private void notification(String notifcationString) {
         CharSequence from = "ETime";
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0,
                 new Intent(), 0);
@@ -88,12 +88,12 @@ public class TimeAlarmService extends IntentService {
         nm.notify("ETime", APP_ID, notif);
     }
 
-    private void notifyAutoClockOutSuccess(Context context) {
-        notification(context, "Auto clock out successful!!!");
+    private void notifyAutoClockOutSuccess() {
+        notification("Auto clock out successful!!!");
     }
 
-    private void notifyAutoClockOutFailure(Context context) {
-        notification(context, "Auto clock out failed!!!");
+    private void notifyAutoClockOutFailure() {
+        notification("Auto clock out failed!!!");
     }
 
     private boolean clockOut() {

@@ -28,25 +28,19 @@ import android.content.Intent;
  */
 public class TimeAlarm extends BroadcastReceiver {
 
-	private String loginName;
-    private String password;
-
     @Override
     public void onReceive(Context context, Intent intent) {
         TimeAlarmService.setLockContext(context);
         TimeAlarmService.getLock().acquire();
 
-    	loginName = intent.getStringExtra("username");
-        password = intent.getStringExtra("password");
+        String loginName = intent.getStringExtra("username");
+        String password = intent.getStringExtra("password");
 
     	Intent alarmIntent = new Intent(context, TimeAlarmService.class);
     	alarmIntent.putExtra(TimeAlarmService.USERNAME, loginName);
     	alarmIntent.putExtra(TimeAlarmService.PASSWORD, password);
     	TimeAlarmService.getLock().acquire();
-    	context.startService(alarmIntent);    	
-        
+    	context.startService(alarmIntent);
     }
-
-   
 }
 
