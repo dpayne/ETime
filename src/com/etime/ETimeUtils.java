@@ -340,6 +340,18 @@ class ETimeUtils {
         return eightHrPunch;
     }
 
+    /**
+     * Round the list of punches for today. Does some weird rounding rules.
+     * Rounds the first time stamp to the nearest 15 mins. Round any
+     * pair of clock out then clock in's to the neareset total 15 mins.
+     *
+     * Example:
+     *  Clock out for lunch at 12:04, Clock back in at 12:27. A total
+     *  of 23 mins spent on lunch. The lunch time is then rounded to the
+     *  nearest 15 mins. In this case 23 is rounded to 30 mins.
+     *
+     * @param punches List of punches for today
+     */
     protected static void roundPunches(List<Punch> punches) {
         Punch lastPunch = null;
         int index = 1;
