@@ -20,7 +20,6 @@ package com.etime;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.util.Log;
 
 /**
  * User: dpayne2
@@ -34,16 +33,16 @@ public class TimeAlarm extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-    	Log.v("ETime-TimeAlarm", "In TimeAlarm onReceive");
-    	
+        TimeAlarmService.setLockContext(context);
+        TimeAlarmService.getLock().acquire();
+
     	loginName = intent.getStringExtra("username");
         password = intent.getStringExtra("password");
-        Log.v("ETime-TimeAlarm", "loginName="+loginName);
-        
+
     	Intent alarmIntent = new Intent(context, TimeAlarmService.class);
     	alarmIntent.putExtra(TimeAlarmService.USERNAME, loginName);
     	alarmIntent.putExtra(TimeAlarmService.PASSWORD, password);
-    	TimeAlarmService.getLock(context).acquire();
+    	TimeAlarmService.getLock().acquire();
     	context.startService(alarmIntent);    	
         
     }
