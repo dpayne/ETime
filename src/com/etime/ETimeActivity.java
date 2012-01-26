@@ -66,6 +66,7 @@ public class ETimeActivity extends Activity {
     private static final long DEF_TIMEOUT = 900000; // 15 mins in milliseconds
 
     private ProgressBar progressBar;
+    private ProgressBar progressBar2;
     private Button recordTime;
 
     private List<Punch> punches;  // list of punches in/out for today
@@ -359,6 +360,7 @@ public class ETimeActivity extends Activity {
         cookieManager = getSyncedCookieManager();
 
         progressBar = (ProgressBar) findViewById(R.id.pb_progressBar);
+        progressBar2 = (ProgressBar) findViewById(R.id.progressBar2);
         recordTime = (Button) findViewById(R.id.btn_recordTime);
         textViewTotalHrs = (Button) findViewById(R.id.btn_totalHrs);
         totalHrsLoggedToday = (Button) findViewById(R.id.btn_totalHrsToday);
@@ -499,6 +501,7 @@ public class ETimeActivity extends Activity {
     protected void hideProgressBar() {
         progressBar.setVisibility(View.GONE);
         loading.setVisibility(View.GONE);
+        progressBar2.setVisibility(View.GONE);
     }
 
     /**
@@ -598,7 +601,8 @@ public class ETimeActivity extends Activity {
                 break;
             case R.id.menu_refresh:
                 loginTime = 0;
-                onResume();
+                progressBar2.setVisibility(View.VISIBLE);
+                onResume();                
                 break;
         }
         return true;
