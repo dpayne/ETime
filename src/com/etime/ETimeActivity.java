@@ -267,8 +267,12 @@ public class ETimeActivity extends Activity {
      */
     public String punchToTimeString(Punch punch) {
         Calendar calendar = punch.getCalendar();
-        return " " + getHourFromCalendar(calendar)
-                + ":" + calendar.get(Calendar.MINUTE) + " "
+        int hour = getHourFromCalendar(calendar);
+        int minute =  calendar.get(Calendar.MINUTE);
+        String minStr = (minute < 10) ? "0" + minute : ""+minute;
+
+        return " " + hour
+                + ":" + minStr + " "
                 + ((calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM");
     }
 
