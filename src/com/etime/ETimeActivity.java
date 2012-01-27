@@ -190,7 +190,6 @@ public class ETimeActivity extends Activity {
         totalHrsLoggedToday.setText("Total Hrs Today: " + ETimeUtils.todaysTotalHrsLogged(punches));
 
         if (punches.size() > 0) {
-            ETimeUtils.roundPunches(punches);
             lastPunch = punches.get(punches.size() - 1);
             if (lastPunch != null) {
                 updateCurStatusBtn();

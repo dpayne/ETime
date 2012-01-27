@@ -33,31 +33,13 @@ public class RoundingRules {
         return punch;
     }
 
-    public static Punch getRoundedFromLunchTime(Punch lunchStart, Punch lunchEnd) {
-        Punch roundedLunchStart = getRoundedPunch(lunchStart);
+    public static long getRoundedTime(long punchTime) {
+        Calendar time = Calendar.getInstance();
+        time.setTimeInMillis(punchTime);
+        int minutes = (int) (Math.round(time.get(Calendar.MINUTE) / 15.0) * 15);
 
-        // The minute value after it was rounded to ADP recorded time.
-        int roundedLunchMinutes = roundedLunchStart.getCalendar().get(Calendar.MINUTE);
-        // The minute value before rounding
-        int startMinutes = lunchStart.getCalendar().get(Calendar.MINUTE);
+        time.set(Calendar.MINUTE, minutes);
 
-        // Rounded - Actual = Offset minutes
-        int offset = roundedLunchMinutes - startMinutes; //(15m - 10m = 5m to add to clocked in time);
-
-        // Get 
-        int endMinutes = lunchEnd.getCalendar().get(Calendar.MINUTE);
-        int endHours = lunchEnd.getCalendar().get(Calendar.HOUR);
-
-        int finalMinutes = endMinutes + offset;
-
-        if (finalMinutes >= 60) {
-            finalMinutes -= 60;
-            endHours += 1;
-        }
-
-        lunchEnd.getCalendar().set(Calendar.HOUR, endHours);
-        lunchEnd.getCalendar().set(Calendar.MINUTE, finalMinutes);
-
-        return lunchEnd;
+        return time.getTimeInMillis();
     }
 }
