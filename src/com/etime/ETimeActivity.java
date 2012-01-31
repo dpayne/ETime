@@ -23,6 +23,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -185,12 +186,11 @@ public class ETimeActivity extends Activity {
      * Called when TimeCardAsyncTask is done processing. Does lot of stuff.
      */
     public void onPostParsingTimeCard() {
-
+    	Log.v(TAG, "in postParingTimeCard");
         textViewTotalHrs.setText("Total Hrs this pay period: " + totalHrs);
         totalHrsLoggedToday.setText("Total Hrs Today: " + ETimeUtils.todaysTotalHrsLogged(punches));
 
         if (punches.size() > 0) {
-            ETimeUtils.roundPunches(punches);
             lastPunch = punches.get(punches.size() - 1);
             if (lastPunch != null) {
                 updateCurStatusBtn();
@@ -201,7 +201,9 @@ public class ETimeActivity extends Activity {
 
                 setAutoClockOut(eightHrPunch);
             }
-        }
+        }       
+
+        progressBar2.setVisibility(View.GONE);
     }
 
     /**
@@ -267,8 +269,12 @@ public class ETimeActivity extends Activity {
      */
     public String punchToTimeString(Punch punch) {
         Calendar calendar = punch.getCalendar();
-        return " " + getHourFromCalendar(calendar)
-                + ":" + calendar.get(Calendar.MINUTE) + " "
+        int hour = getHourFromCalendar(calendar);
+        int minute =  calendar.get(Calendar.MINUTE);
+        String minStr = (minute < 10) ? "0" + minute : ""+minute;
+
+        return " " + hour
+                + ":" + minStr + " "
                 + ((calendar.get(Calendar.AM_PM) == Calendar.AM) ? "AM" : "PM");
     }
 
@@ -466,6 +472,7 @@ public class ETimeActivity extends Activity {
      * parse the timecard of the user. Starts a TimeCardAsyncTask
      */
     protected void parseTimeCard() {
+        progressBar2.setVisibility(View.VISIBLE);
         TimeCardAsyncTask timeCardAsyncTask = new TimeCardAsyncTask();
         timeCardAsyncTask.setActivity((ETimeActivity) activity);
         timeCardAsyncTask.setHttpClient(httpClient);
@@ -501,7 +508,6 @@ public class ETimeActivity extends Activity {
     protected void hideProgressBar() {
         progressBar.setVisibility(View.GONE);
         loading.setVisibility(View.GONE);
-        progressBar2.setVisibility(View.GONE);
     }
 
     /**

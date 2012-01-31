@@ -300,72 +300,41 @@ class ETimeUtils {
 
 
     protected static Punch getEightHrPunch(List<Punch> punches) {
+    	Log.v("etime-util", "in eightHrpunch");
         if (punches == null || punches.isEmpty())
             return null;
-        Punch lastPunch = punches.get(punches.size() - 1);
+
         Punch eightHrPunch = new Punch();
-        Punch lastClockIn = getLastClockIn(punches);
-        Calendar calendar;
-
-        if (lastClockIn == null || (lastPunch != null && !lastPunch.isClockIn())) {
-            calendar = Calendar.getInstance();
-        } else {
-            calendar = lastClockIn.getCalendar();
-        }
-
-        eightHrPunch.setClockIn(false);
-
-        double totalHrsLoggedToday = todaysTotalHrsLogged(punches);
-
-        if (totalHrsLoggedToday >= 8.0) {
-            eightHrPunch.setCalendar(Calendar.getInstance());
-            return eightHrPunch;
-        }
-        double timeLeft = 8.0 - totalHrsLoggedToday;
-
-        int hrs = (int) timeLeft;
-        int mins = (int) ((timeLeft - Math.floor(timeLeft)) * 60);
-
-        int curHr = calendar.get(Calendar.HOUR_OF_DAY);
-        int curMin = calendar.get(Calendar.MINUTE);
-
-        hrs += ((mins + curMin) / 60 + curHr) % 24;
-        mins = (mins + curMin) % 60;
-
-        calendar.set(Calendar.HOUR_OF_DAY, hrs);
-        calendar.set(Calendar.MINUTE, mins);
-
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTimeInMillis(clockOutAt(punches));
         eightHrPunch.setCalendar(calendar);
-
+        Log.v("etime-util", eightHrPunch.toString());
         return eightHrPunch;
     }
 
-    /**
-     * Round the list of punches for today. Does some weird rounding rules.
-     * Rounds the first time stamp to the nearest 15 mins. Round any
-     * pair of clock out then clock in's to the neareset total 15 mins.
-     *
-     * Example:
-     *  Clock out for lunch at 12:04, Clock back in at 12:27. A total
-     *  of 23 mins spent on lunch. The lunch time is then rounded to the
-     *  nearest 15 mins. In this case 23 is rounded to 30 mins.
-     *
-     * @param punches List of punches for today
-     */
-    protected static void roundPunches(List<Punch> punches) {
-        Punch lastPunch = null;
-        int index = 1;
-        for (Punch punch : punches) {
-            if (index == 1) {
-                punch.setCalendar((RoundingRules.getRoundedPunch(punch)).getCalendar());
-            } else {
-                if (!punch.isClockIn()) {
-                    lastPunch.setCalendar((RoundingRules.getRoundedPunch(lastPunch)).getCalendar());
-                    punch.setCalendar((RoundingRules.getRoundedFromLunchTime(lastPunch, punch)).getCalendar());
-                }
-            }
-            lastPunch = punch;
-            index++;
-        }
+
+    protected static long clockOutAt(List<Punch> punches){
+       Iterator<Punch> iterPunches = punches.iterator();
+       long clockOutTime = 0;
+       int index = 1;
+       while(iterPunches.hasNext())
+       {
+              long punch = iterPunches.next().getCalendar().getTimeInMillis();
+              if(index == 1)
+                     punch = RoundingRules.getRoundedTime(punch);
+              else if(index == 2 || index%2 == 0)
+                     punch *= -1;
+             
+              Punch test = new Punch();
+              test.setCalendar(Calendar.getInstance());
+              test.getCalendar().setTimeInMillis(Math.abs(punch));
+              Log.v("ETime-Utils", test.toString());
+              clockOutTime += punch;
+              index++;
+       }
+       clockOutTime += 8*1000*60*60;
+       clockOutTime = RoundingRules.getRoundedTime(clockOutTime);
+
+       return clockOutTime;
     }
 }

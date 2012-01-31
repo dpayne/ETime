@@ -82,7 +82,7 @@ public class TimeAlarmService extends IntentService {
 
         notif.flags |= Notification.DEFAULT_LIGHTS;
         notif.defaults |= Notification.DEFAULT_VIBRATE;
-        notif.flags |= Notification.FLAG_ONGOING_EVENT;
+        //notif.flags |= Notification.FLAG_ONGOING_EVENT;
 
         notif.setLatestEventInfo(this, from, notifcationString, contentIntent);
         nm.notify("ETime", APP_ID, notif);
