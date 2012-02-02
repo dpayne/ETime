@@ -11,4 +11,10 @@
     <color name="TextButtonBorderColor">#565051</color>
     <color name="TextButtonDisabledStartColor">#736F6E</color>
     <color name="TextButtonDisabledEndColor">#000000</color>
+
+    <color name="LoadingButtonTextColor">#FFFFFF</color>
+
+    <color name="TextButtonTextColor">#000000</color>
+    <color name="TextButtonTextShadowColor">#736F6E</color>
+
 </resources>

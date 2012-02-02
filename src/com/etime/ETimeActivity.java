@@ -151,8 +151,7 @@ public class ETimeActivity extends Activity {
         mManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         Notification notification = new Notification(icon, message, when);
         notification.flags |= Notification.DEFAULT_LIGHTS;
-        //notification.defaults |= Notification.DEFAULT_VIBRATE;
-        //notification.flags |= Notification.FLAG_ONGOING_EVENT;
+        notification.flags |= Notification.FLAG_ONGOING_EVENT;
         notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
         mManager.notify("ETime", APP_ID, notification);
     }

@@ -3,7 +3,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
-                android:background="#086CA2"
+                android:background="@drawable/bg"
         >
     <ProgressBar android:id="@+id/pb_progressBar"
                  android:layout_marginLeft="5dp"
@@ -28,23 +28,13 @@
             android:layout_marginLeft="15dip"
             android:text="@string/loading"
             android:visibility="visible"
-            android:textColor="#A65A00"
+            android:textColor="@color/LoadingButtonTextColor"
             />
     <WebView android:id="@+id/web_engine"
              android:layout_width="0dp"
              android:layout_height="0dp"
              android:visibility="gone"
             />
-    <TextView
-            android:id="@+id/tv_timeToClockOut"
-            android:visibility="gone"
-            android:layout_width="fill_parent"
-            android:layout_height="40dip"
-            android:textSize="8pt"
-            android:textColor="#FFFFFF"
-            android:layout_alignParentRight="true"
-            android:gravity="right"
-            android:text=" "/>
     <Button
             android:id="@+id/btn_curStatus"
             android:layout_width="fill_parent"
@@ -56,13 +46,13 @@
             android:background="@drawable/text_button"
 
             android:text=" "
-            android:textColor="#034569"
+            android:textColor="@color/TextButtonTextColor"
             android:textSize="18sp"
 
             android:shadowRadius="1"
             android:shadowDx="1"
             android:shadowDy="1"
-            android:shadowColor="#736F6E"
+            android:shadowColor="@color/TextButtonTextShadowColor"
 
             android:visibility="gone"
             android:clickable="false"
@@ -78,13 +68,13 @@
             android:background="@drawable/text_button"
 
             android:text=" "
-            android:textColor="#034569"
+            android:textColor="@color/TextButtonTextColor"
             android:textSize="18sp"
 
             android:shadowRadius="1"
             android:shadowDx="1"
             android:shadowDy="1"
-            android:shadowColor="#736F6E"
+            android:shadowColor="@color/TextButtonTextShadowColor"
 
             android:visibility="gone"
             android:clickable="false"
@@ -100,13 +90,13 @@
             android:background="@drawable/text_button"
 
             android:text=" "
-            android:textColor="#034569"
+            android:textColor="@color/TextButtonTextColor"
             android:textSize="18sp"
 
             android:shadowRadius="1"
             android:shadowDx="1"
             android:shadowDy="1"
-            android:shadowColor="#736F6E"
+            android:shadowColor="@color/TextButtonTextShadowColor"
 
             android:visibility="gone"
             android:clickable="false"
@@ -121,13 +111,13 @@
             android:background="@drawable/text_button"
 
             android:text=" "
-            android:textColor="#034569"
+            android:textColor="@color/TextButtonTextColor"
             android:textSize="18sp"
 
             android:shadowRadius="1"
             android:shadowDx="1"
             android:shadowDy="1"
-            android:shadowColor="#736F6E"
+            android:shadowColor="@color/TextButtonTextShadowColor"
 
             android:visibility="gone"
             android:clickable="false"
