@@ -321,7 +321,7 @@ class ETimeUtils {
               long punch = iterPunches.next().getCalendar().getTimeInMillis();
               if(index == 1)
                      punch = RoundingRules.getRoundedTime(punch);
-              else if(index == 3 || index%2 == 1)
+              else if(index == 2 || index%2 == 0)
                      punch *= -1;
              
               clockOutTime += punch;
