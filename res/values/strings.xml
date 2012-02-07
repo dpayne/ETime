@@ -16,9 +16,12 @@
     
     <!-- Strings in ETimeActivity class -->
     <string name="login_url">https://eet.adp.com/public/etime/html.html</string>
+    <string name="login_url2">https://eet.adp.com/wfc/SSOLogon/logonWithUID?IntendedURL=/wfc/applications/suitenav/navigation.do?ESS=true</string>
+    <string name="login_url3">https://eet.adp.com/wfc/applications/wtk/html/ess/timestamp.jsp</string>
     <string name="timestamp_url">https://eet.adp.com/wfc/applications/suitenav/navigation.do?ESS=true</string>
     <string name="timestamp_success_url">https://eet.adp.com/wfc/applications/wtk/html/ess/timestamp-result.jsp</string>
-    
+    <string name="login_failed_str">Logon attempt failed</string>
+
     <string name="timestamp_record_url">https://eet.adp.com/wfc/applications/wtk/html/ess/timestamp-record.jsp</string>
     <string name="timecard_url">https://eet.adp.com/wfc/applications/mss/esstimecard.do</string>
 	<string name="login_failed_url">https://bgateway.adp.com/siteminderagent/bad/EEBadLogin.html?eTIME</string>

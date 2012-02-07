@@ -33,8 +33,7 @@ public class TimeCardAsyncTask extends AsyncTask<Void, Integer, Boolean> {
     private ProgressBar progressBar;
     private ETimeActivity activity;
     private DefaultHttpClient httpClient;
-    private String TIMECARD_URL = "https://eet.adp.com/wfc/applications/mss/esstimecard.do";
-    private boolean status = false;
+    private String TIMECARD_URL;
 
     private static final String TAG = "TimeCard-4321";
 
@@ -52,6 +51,7 @@ public class TimeCardAsyncTask extends AsyncTask<Void, Integer, Boolean> {
 
     @Override
     protected void onPreExecute() {
+        TIMECARD_URL = activity.getString(R.string.timecard_url);
         myProgress = 0;
     }
 
@@ -60,7 +60,7 @@ public class TimeCardAsyncTask extends AsyncTask<Void, Integer, Boolean> {
         String page = ETimeUtils.getHtmlPage(httpClient, TIMECARD_URL);
         totalHrs = ETimeUtils.getTotalsHrs(page);
         punches = ETimeUtils.getTodaysPunches(page);
-        status = !punches.isEmpty();
+        boolean status = !punches.isEmpty();
         myProgress = 100;
         publishProgress(myProgress);
         return status;

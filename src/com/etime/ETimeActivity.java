@@ -66,32 +66,29 @@ public class ETimeActivity extends Activity {
 
     private static final long DEF_TIMEOUT = 900000; // 15 mins in milliseconds
 
-    private ProgressBar progressBar;
-    private ProgressBar progressBar2;
-    private Button recordTime;
+    private ProgressBar progressBar;  //the loading progress bar used during login process
+    private ProgressBar progressBar2; //spinning bar to be used when loading timecard data
+    private TextView loading;
 
     private List<Punch> punches;  // list of punches in/out for today
     private double totalHrs;      // total hrs logged today, not counting time since last punch in
     private String oldLoginNameBeforePreferencePage;
 
-    private Button curStatus;
-    private Button textViewTotalHrs;
-    private Button totalHrsLoggedToday;
-    private Button timeToClockOut;
+    private Button recordTime;  //Record time stamp button
+    private Button curStatus;   //A print out of the last punch
+    private Button textViewTotalHrs; //Total hours logged this pay period
+    private Button totalHrsLoggedToday; //Total hours logged today
+    private Button timeToClockOut; //Eight hour clock out time.
 
-    private TextView loading;
-
-    private Punch lastPunch;
     private boolean AUTO_CLOCKOUT;
 
-    private NotificationManager mManager;
-    private static final int APP_ID = 1;
+    private NotificationManager mManager; //Notification used for showing auto clock out time
+    private static final int APP_ID = 1; //APP id used in notifications, also used in TimeAlarmService. DO NOT CHANGE
+    private String lastNotificationMessage; //Used to limit notifications to only updated notifications
 
     private boolean notCreated = true;    // onResume not run yet
-    private boolean autoClockOutIfOkTimeCard = false;
-    private boolean oldAutoClockBeforePreferencePage;
+    private boolean oldAutoClockBeforePreferencePage; //Used to check if auto clock settings has been changed
     private CookieManager cookieManager;
-    private String lastNotificationMessage;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -153,6 +150,7 @@ public class ETimeActivity extends Activity {
         notification.flags |= Notification.DEFAULT_LIGHTS;
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
         notification.setLatestEventInfo(context, contentTitle, message, contentIntent);
+
         mManager.notify("ETime", APP_ID, notification);
     }
 
@@ -188,6 +186,7 @@ public class ETimeActivity extends Activity {
     	Log.v(TAG, "in postParingTimeCard");
         textViewTotalHrs.setText("Total Hrs this pay period: " + totalHrs);
         totalHrsLoggedToday.setText("Total Hrs Today: " + ETimeUtils.todaysTotalHrsLogged(punches));
+        Punch lastPunch;
 
         if (punches.size() > 0) {
             lastPunch = punches.get(punches.size() - 1);
@@ -211,16 +210,26 @@ public class ETimeActivity extends Activity {
      */
     private void updateCurStatusBtn() {
         StringBuilder sb = new StringBuilder("Clocked ");
+        Punch lastPunch;
+        Calendar lastPunchCalendar;
+        int minute;
+
+        if (punches.isEmpty()) {
+            return;
+        }
+
+        lastPunch = punches.get(punches.size() - 1);
         if (lastPunch.isClockIn()) {
             sb.append("in ");
         } else {
             sb.append("out ");
         }
+
         sb.append("at ");
-        Calendar lastPunchCalendar = lastPunch.getCalendar();
+        lastPunchCalendar = lastPunch.getCalendar();
         sb.append(Integer.toString(getHourFromCalendar(lastPunchCalendar))).append(":");
 
-        int minute = lastPunch.getCalendar().get(Calendar.MINUTE);
+        minute = lastPunch.getCalendar().get(Calendar.MINUTE);
         if (minute < 10) {
             sb.append("0");
         }
@@ -243,15 +252,14 @@ public class ETimeActivity extends Activity {
      *                     clocked out at exactly 8 hrs.
      */
     private void setAutoClockOut(Punch eightHrPunch) {
-        if (AUTO_CLOCKOUT) {
-            if (autoClockOutIfOkTimeCard && lastPunch.isClockIn()) {
-                clockOut();
-                autoClockOutIfOkTimeCard = false;
+        Punch lastPunch;
 
+        if (AUTO_CLOCKOUT) {
+            if (punches.isEmpty()) {
                 return;
             }
-            autoClockOutIfOkTimeCard = false;
-
+            lastPunch = punches.get(punches.size()-1);
+            
             long countDownTime = eightHrPunch.getCalendar().getTimeInMillis() - Calendar.getInstance().getTimeInMillis();
             if (countDownTime > 0 && lastPunch.isClockIn()) {
                 setOneTimeAlarm(eightHrPunch.getCalendar().getTimeInMillis());
@@ -353,7 +361,6 @@ public class ETimeActivity extends Activity {
     private void setupGlobals() {
         loginTime = 0;
         httpClient = new DefaultHttpClient();
-        lastPunch = null;
 
         TIMESTAMP_RECORD_URL = getString(R.string.timestamp_record_url);
         TIMESTAMP_SUCCESS = getString(R.string.timestamp_success_url);
@@ -437,7 +444,7 @@ public class ETimeActivity extends Activity {
         } else {
             hideProgressBar();
             showTitlePageBtns();
-            if ((AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage) || (AUTO_CLOCKOUT && autoClockOutIfOkTimeCard)) {
+            if ((AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage) || AUTO_CLOCKOUT) {
                 parseTimeCard();
             }
         }
@@ -654,5 +661,4 @@ public class ETimeActivity extends Activity {
                 intent, PendingIntent.FLAG_ONE_SHOT);
         am.set(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntentAutoClockAlarm);
     }
-
 }

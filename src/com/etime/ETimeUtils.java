@@ -32,6 +32,8 @@ import java.util.Calendar;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * User: dpayne2
@@ -40,17 +42,15 @@ import java.util.List;
  */
 class ETimeUtils {
     private static final String TAG = "ETimeUtils-4321";
-
-    private static final String DIV_CLOSE = "</div>";
-    private static final String TABLE_ROW_TAG = "<tr class";
-    private static final String PUNCH_TAG = "Punch\">";
-    private static final String PUNCH_IN = "InPunch";
-    private static final String PUNCH_END = "<div class=\"\" title=\"\">";
-    private static final String TOTAL_STR = "Total:";
-    private static final String HTML_SPACE = "&nbsp;";
+    private static final String TOTAL_STR = "Total:&nbsp;";
     private static final String[] daysOfWeek = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
-    private static final String TABLE_ROW_END_TAG = "</tr>";
 
+    /**
+     * Return a string of the raw html web page at 'url'.
+     * @param client The httpclient to be used to get the webpage
+     * @param url The url the webpage is associated with.
+     * @return  A String of the raw html web page
+     */
     protected static String getHtmlPage(DefaultHttpClient client, String url) {
         HttpResponse response;
         HttpGet httpGet;
@@ -72,7 +72,6 @@ class ETimeUtils {
                 sb.append(line).append(NL);
             }
 
-            in.close();
             page = sb.toString();
 
         } catch (Exception e) {
@@ -90,6 +89,14 @@ class ETimeUtils {
         return page;
     }
 
+    /**
+     * Setup webview with a custom WebViewClient and WebChromeClient. Javascript is enabled, file access is allowed,
+     * zoom works, and javascript can open windows.
+     * @param webview the WebView to be setup.
+     * @param webViewClient The custom WebViewClient to be used.
+     * @param webChromeClient The custom WebChromeClient to be used.
+     * @return return the modified webview.
+     */
     protected static WebView setupWebView(WebView webview, WebViewClient webViewClient, WebChromeClient webChromeClient) {
 
         webview.getSettings().setJavaScriptEnabled(true);
@@ -105,168 +112,137 @@ class ETimeUtils {
         return webview;
     }
 
-
+    /**
+     * Get the total hrs logged this pay period.
+     * @param page the raw html of the user's timecard page
+     * @return A double representing the total hours logged this pay period by the user.
+     */
     protected static double getTotalsHrs(String page) {
         double total = 0;
 
-        try {
-            int startOfTotal = page.indexOf(TOTAL_STR);
-
-            int endOfTotal = page.indexOf(DIV_CLOSE, startOfTotal);
-            String withHtmlSpaces = page.substring(startOfTotal + TOTAL_STR.length(), endOfTotal);
-            String withoutHtmlSpaces = withHtmlSpaces.replaceAll(HTML_SPACE, "");
-
-            total = Double.parseDouble(withoutHtmlSpaces);
-        } catch (Exception e) {
-            Log.w(TAG, e.toString());
+        Pattern pattern = Pattern.compile("(?i)(<div.*?>)("+ TOTAL_STR + ")(.*?)(</div>)");
+        Matcher matcher = pattern.matcher(page);
+        if (matcher.find()) {
+            String totalStr = matcher.group(3);
+            if (!totalStr.isEmpty()) {
+                total = Double.parseDouble(totalStr);
+            }
         }
 
         return total;
     }
 
-    private static int findNextTodaysRow(String page, int startIndex) {
+    /**
+     * Return a List of Punches for the current day. The list is empty if there are no punches for today.
+     * @param page the raw html of the user's timecard page
+     * @return A list of Punches for the current day.
+     */
+    protected static List<Punch> getTodaysPunches(String page) {
+        String curRow;
+        String date;
+        List<Punch> punchesList = new LinkedList<Punch>();
+
         Calendar calendar = Calendar.getInstance();
         int month = calendar.get(Calendar.MONTH) + 1;
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         String dayOfWeek = daysOfWeek[calendar.get(Calendar.DAY_OF_WEEK) - 1];
 
-        String date;
         if (day < 10) {
-            date = ">" + dayOfWeek + " " + Integer.toString(month) + "/0" + Integer.toString(day);
+            date = dayOfWeek + " " + Integer.toString(month) + "/0" + Integer.toString(day);
         } else {
-            date = ">" + dayOfWeek + " " + Integer.toString(month) + "/" + Integer.toString(day);
+            date = dayOfWeek + " " + Integer.toString(month) + "/" + Integer.toString(day);
         }
 
-        int indexOfDate = page.indexOf(date, startIndex);
-
-        if (indexOfDate < 0) {
-            return -1;
-        }
-
-        return page.lastIndexOf(TABLE_ROW_TAG, indexOfDate);
-    }
-
-    protected static List<Punch> getTodaysPunches(String page) {
-
-        int indexOfCurRow;
-        int indexOfEndOfCurRow;
-        String curRow;
-        int index = 0;
-        List<Punch> punchesList = new LinkedList<Punch>();
-        try {
-            do {
-
-                indexOfCurRow = findNextTodaysRow(page, index);
-                if (indexOfCurRow < 0)
-                    break;
-
-                indexOfEndOfCurRow = page.indexOf(TABLE_ROW_END_TAG, indexOfCurRow);
-                if (indexOfEndOfCurRow < 0)
-                    break;
-
-                curRow = page.substring(indexOfCurRow, indexOfEndOfCurRow);
-                punchesList.addAll(getPunchesFromRow(curRow));
-
-                index = indexOfEndOfCurRow + TABLE_ROW_END_TAG.length();
-
-            } while (indexOfCurRow >= 0);
-
-        } catch (Exception e) {
-            Log.w(TAG, e);
+        Pattern todaysRowsPattern = Pattern.compile("(?i)(>"+date+")(.*?)(</tr>)", Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher todaysRowsMatcher = todaysRowsPattern.matcher(page);
+        while (todaysRowsMatcher.find()) {
+            curRow = todaysRowsMatcher.group(2);
+            addPunchesFromRowToList(curRow, punchesList);
         }
 
         return punchesList;
-
     }
 
-    private static List<Punch> getPunchesFromRow(String row) {
-        List<Punch> punchesList = new LinkedList<Punch>();
-
+    /**
+     * Adds all Punches in a given string to a list of punches.
+     * @param row The string to be searched for punches.
+     * @param punches A list of punches to be added to.
+     */
+    private static void addPunchesFromRowToList(String row, List<Punch> punches) {
+        //Format to be matched is
+        //  <td title="" class="InPunch"><div class="" title=""> 2:45PM </div></td>
+        Pattern punchPattern = Pattern.compile("(?i)((InPunch|OutPunch)\">)(.*?)(>\\s*)(.*?)(\\s*</div>)",
+                    Pattern.MULTILINE | Pattern.DOTALL);
+        Matcher punchMatcher = punchPattern.matcher(row);
         Punch punch;
-        int index = 0;
-        do {
-            row = row.substring(index);
-            punch = new Punch();
-            index = getNextPunch(row, index, punch);
-            if (index >= 0) {
-                punchesList.add(punch);
-            }
-        } while (index > 0);
-        return punchesList;
-    }
 
-    private static int getNextPunch(String page, int startIndex, Punch punch) {
-        try {
-            int indexOfPunch = page.indexOf(PUNCH_TAG, startIndex);
-            int indexOfStartOfDiv = page.indexOf(PUNCH_END, indexOfPunch + PUNCH_TAG.length() + 1);
-            int endOfPunch = page.indexOf(DIV_CLOSE, indexOfStartOfDiv);
+        while (punchMatcher.find()) {
+            String punchStr = punchMatcher.group(5);
 
-            if (page.substring(0, indexOfStartOfDiv).contains(PUNCH_IN)) {
-                punch.setClockIn(true);
-            } else {
-                punch.setClockIn(false);
-            }
-
-            String strDate = page.substring(indexOfStartOfDiv + PUNCH_END.length(), endOfPunch);
-            strDate = strDate.trim();
-
-            int hour = Integer.parseInt(strDate.substring(0, strDate.indexOf(':')));
-            boolean am;
-            int min;
-
-            if (strDate.contains("P")) {
-                am = false;
-                min = Integer.parseInt(strDate.substring(strDate.indexOf(':') + 1, strDate.indexOf('P')));
-            } else if (strDate.contains("A")) {
-                am = true;
-                min = Integer.parseInt(strDate.substring(strDate.indexOf(':') + 1, strDate.indexOf('A')));
-            } else {
-                return -1;
-            }
-
-            Calendar calendar = Calendar.getInstance();
-            int hour24;
-            if (am) {
-                calendar.set(Calendar.AM_PM, Calendar.AM);
-                calendar.set(Calendar.HOUR, hour);
-                if (hour == 12) {
-                    hour24 = 0;
+            if (!punchStr.equals("&nbsp;")) {
+                punch = getPunchFromString(punchStr);//parse a Punch from a string (e.g. "12:00PM")
+                if (punchMatcher.group(2).equals("InPunch")) {
+                    punch.setClockIn(true);
                 } else {
-                    hour24 = hour;
+                    punch.setClockIn(false);
                 }
-            } else {
-                calendar.set(Calendar.AM_PM, Calendar.PM);
-                calendar.set(Calendar.HOUR, hour);
-
-                if (hour != 12) {
-                    hour24 = hour + 12;
-                } else {
-                    hour24 = hour;
-                }
+                punches.add(punch);
             }
-
-            calendar.set(Calendar.HOUR_OF_DAY, hour24);
-            calendar.set(Calendar.MINUTE, min);
-            calendar.set(Calendar.SECOND, 0);
-            punch.setCalendar(calendar);
-
-            return endOfPunch + PUNCH_END.length();
-        } catch (Exception e) {
-            Log.w(TAG, e.toString());
-            return -1;
         }
     }
 
-    protected static Punch getLastClockIn(List<Punch> punches) {
-        Punch lastClockIn = null;
-        for (Punch punch : punches) {
-            if (punch.isClockIn()) {
-                lastClockIn = punch;
+    /**
+     * Parse a Punch from a given string. The format is assumed to be "12:00AM". All other calendar fields are set
+     * to the current days value. The day, month, year, timezone and other misc fields are set to the current days value.
+     * @param punchStr    The String to be parsed for the punch
+     * @return the parsed Punch
+     */
+    private static Punch getPunchFromString(String punchStr) {
+        Punch punch = new Punch();
+        Calendar calendar;
+        Pattern punchPattern = Pattern.compile("(\\d+):(\\d+)(A|P)M");//Format is "12:00PM"
+        Matcher punchMatcher = punchPattern.matcher(punchStr);
+
+        if (!punchMatcher.find()) {
+            return null;
+        }
+
+        int hour = Integer.parseInt(punchMatcher.group(1));
+        int min = Integer.parseInt(punchMatcher.group(2));
+
+        calendar = Calendar.getInstance();
+        int hour24;
+        if (punchMatcher.group(3).equals("A")) {
+            calendar.set(Calendar.AM_PM, Calendar.AM);
+            calendar.set(Calendar.HOUR, hour);
+            if (hour == 12) {
+                hour24 = 0;
+            } else {
+                hour24 = hour;
+            }
+        } else {
+            calendar.set(Calendar.AM_PM, Calendar.PM);
+            calendar.set(Calendar.HOUR, hour);
+
+            if (hour != 12) {
+                hour24 = hour + 12;
+            } else {
+                hour24 = hour;
             }
         }
-        return lastClockIn;
+
+        calendar.set(Calendar.HOUR_OF_DAY, hour24);
+        calendar.set(Calendar.MINUTE, min);
+        calendar.set(Calendar.SECOND, 0);
+        punch.setCalendar(calendar);
+        return punch;
     }
 
+    /**
+     * Get the total hours logged today from a list pf punches. This method does not account for lunch rounding.
+     * @param punches   A list of punches from a given user for today.
+     * @return  A double of the total hours logged today.
+     */
     protected static double todaysTotalHrsLogged(List<Punch> punches) {
         long runningMilliSecTotal = 0;
         Punch curInPunch;
@@ -292,13 +268,20 @@ class ETimeUtils {
 
             runningMilliSecTotal += curOutPunch.getCalendar().getTimeInMillis() - curInPunch.getCalendar().getTimeInMillis();
         }
-        double hrs = (((runningMilliSecTotal / 1000) / 60) / 60) % 24;
-        double mins = (((runningMilliSecTotal / 1000) / 60) % 60) / 100.0;
 
-        return hrs + mins;
+        int hrs = (int) (((runningMilliSecTotal / 1000) / 60) / 60) % 24;
+        int minutes = (int) (Math.round((((runningMilliSecTotal / 1000) / 60) % 60) / 15.0) * 15);
+        double mins = (minutes) / 60.0;
+
+        return ((double)hrs) + mins;
     }
 
-
+    /**
+     * Get the calculated eight hour punch. The eight hour punch is identical to the punch that is need for the user to
+     * log exactly 8 hours for today.
+     * @param punches   A list of punches logged today by a given user.
+     * @return  The calculated eight hour punch.
+     */
     protected static Punch getEightHrPunch(List<Punch> punches) {
         if (punches == null || punches.isEmpty())
             return null;
@@ -311,23 +294,26 @@ class ETimeUtils {
         return eightHrPunch;
     }
 
-
-    protected static long clockOutAt(List<Punch> punches){
+    /**
+     * return a long of the milliseconds since epoch the user should clock out at to log exactly 8 hours.
+     * @param punches   A list of punches logged today by a given user.
+     * @return  A long of the milliseconds since epoch the user should clock out at to log exactly 8 hours.
+     */
+    protected static long clockOutAt(List<Punch> punches) {
         Iterator<Punch> iterPunches = punches.iterator();
         long clockOutTime = 0;
         int index = 1;
-        while(iterPunches.hasNext())
-        {
+        while (iterPunches.hasNext()) {
             long punch = iterPunches.next().getCalendar().getTimeInMillis();
-            if(index == 1)
+            if (index == 1)
                 punch = RoundingRules.getRoundedTime(punch);
-            else if(index == 2 || index%2 == 0)
+            else if (index == 2 || index % 2 == 0)
                 punch *= -1;
 
             clockOutTime += punch;
             index++;
         }
-        clockOutTime += 8*1000*60*60;
+        clockOutTime += 8 * 1000 * 60 * 60;
         clockOutTime = RoundingRules.getRoundedTime(clockOutTime);
 
         return clockOutTime;

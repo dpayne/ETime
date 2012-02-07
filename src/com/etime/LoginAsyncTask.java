@@ -18,7 +18,6 @@ package com.etime;
  */
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.webkit.CookieManager;
 import android.webkit.CookieSyncManager;
@@ -27,7 +26,6 @@ import android.widget.Toast;
 import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 
-import java.util.Calendar;
 import java.util.List;
 
 /**
@@ -37,20 +35,16 @@ import java.util.List;
  */
 public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
 
-    private String PREFS_USERNAME = "username";
-    private String PREF_LOGINTIME = "loginTime";
-
     private ProgressBar progressBar;
     private ETimeActivity activity;
     private DefaultHttpClient httpClient;
     private CookieManager cookieManager;
-    private Context context = null;
-    private String LOGIN_URL = "https://eet.adp.com/public/etime/html.html";
-    private String LOGIN_URL_STEP2 = "https://eet.adp.com/wfc/SSOLogon/logonWithUID?IntendedURL=/wfc/applications/suitenav/navigation.do?ESS=true";
-    private String LOGIN_URL_STEP3 = "https://eet.adp.com/wfc/applications/wtk/html/ess/timestamp.jsp";
-    private static final String LOGIN_FAILED = "Logon attempt failed";
+    private Context context;
+    private String LOGIN_URL;
+    private String LOGIN_URL_STEP2;
+    private String LOGIN_URL_STEP3;
+    private String LOGIN_FAILED;
 
-    private boolean status = false;
     private String onPostLoadUrl = null;
 
     private static final String TAG = "Login-4321";
@@ -65,10 +59,7 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
                 activity.loadUrl(onPostLoadUrl);
             }
         } else {
-
-
             Toast.makeText(context, "Bad Username/Password", Toast.LENGTH_LONG).show();
-
             activity.startPreferencesPage();
         }
     }
@@ -76,10 +67,16 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
     @Override
     protected void onPreExecute() {
         myProgress = 0;
+        LOGIN_URL = activity.getString(R.string.login_url);
+        LOGIN_URL_STEP2 = activity.getString(R.string.login_url2);
+        LOGIN_URL_STEP3 = activity.getString(R.string.login_url3);
+        LOGIN_FAILED = activity.getString(R.string.login_failed_str);
     }
 
     @Override
     protected Boolean doInBackground(String... params) {
+        boolean status;
+
         if (params.length > 0)
             onPostLoadUrl = params[0];
         if (!signon()) {
@@ -105,6 +102,11 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
         return status;
     }
 
+    /**
+     * Sign on to the ADP eTime site. Return true if signon was successful, false otherwise. Sign on is done through
+     * hitting a series of ADP pages with basic authentication set. Sets the progress bar on the main page.
+     * @return  true if signon was successful, false otherwise.
+     */
     public boolean signon() {
         String page;
         myProgress = 0;
@@ -129,10 +131,6 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
         }
         myProgress += 32;
         publishProgress(myProgress);
-
-        long curTime = Calendar.getInstance().getTimeInMillis();
-        SharedPreferences pref = activity.getSharedPreferences(PREFS_USERNAME, Context.MODE_PRIVATE);
-        pref.edit().putLong(PREF_LOGINTIME, curTime).commit();
 
         return true;
     }

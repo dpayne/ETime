@@ -23,16 +23,11 @@ import java.util.Calendar;
 
 public class RoundingRules {
 
-    public static Punch getRoundedPunch(Punch punch) {
-        Calendar time = punch.getCalendar();
-        int minutes = (int) (Math.round(time.get(Calendar.MINUTE) / 15.0) * 15);
-
-        time.set(Calendar.MINUTE, minutes);
-        punch.setCalendar(time);
-
-        return punch;
-    }
-
+    /**
+     * Round a round a long of a punch in milliseconds to since epoch the the nearest 15 mins.
+     * @param punchTime
+     * @return
+     */
     public static long getRoundedTime(long punchTime) {
         Calendar time = Calendar.getInstance();
         time.setTimeInMillis(punchTime);
