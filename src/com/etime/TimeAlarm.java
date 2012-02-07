@@ -25,12 +25,15 @@ import android.content.Intent;
  * User: dpayne2
  * Date: 1/13/12
  * Time: 11:03 PM
+ *
+ * Runs with the Alarm is tiggered at the eight hour clock out time.
+ * Start the TimeAlarmService to tigger the autoclock out.
  */
 public class TimeAlarm extends BroadcastReceiver {
 
     @Override
     public void onReceive(Context context, Intent intent) {
-        TimeAlarmService.setLockContext(context);
+        /* Acquire the the wake lock to keep the phone awake even when onRecieve is finished. */
         TimeAlarmService.getLock().acquire();
 
         String loginName = intent.getStringExtra("username");
@@ -39,7 +42,6 @@ public class TimeAlarm extends BroadcastReceiver {
     	Intent alarmIntent = new Intent(context, TimeAlarmService.class);
     	alarmIntent.putExtra(TimeAlarmService.USERNAME, loginName);
     	alarmIntent.putExtra(TimeAlarmService.PASSWORD, password);
-    	TimeAlarmService.getLock().acquire();
     	context.startService(alarmIntent);
     }
 }
