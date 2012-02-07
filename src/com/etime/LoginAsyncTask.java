@@ -18,46 +18,37 @@ package com.etime;
  */
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.os.AsyncTask;
-import android.webkit.CookieManager;
-import android.webkit.CookieSyncManager;
 import android.widget.ProgressBar;
 import android.widget.Toast;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
-
-import java.util.List;
 
 /**
  * User: dpayne2
  * Date: 1/5/12
  * Time: 12:02 PM
  */
-public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
+public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implements ETimeAsyncTask {
 
     private ProgressBar progressBar;
     private ETimeActivity activity;
     private DefaultHttpClient httpClient;
-    private CookieManager cookieManager;
     private Context context;
     private String LOGIN_URL;
     private String LOGIN_URL_STEP2;
-    private String LOGIN_URL_STEP3;
     private String LOGIN_FAILED;
-
-    private String onPostLoadUrl = null;
 
     private static final String TAG = "Login-4321";
 
     int myProgress;
+    private int LOGIN_URL_PAGE_SIZE;
+    private int LOGIN_URL2_PAGE_SIZE;
 
     @Override
     protected void onPostExecute(Boolean result) {
         if (result) {
             activity.onPostLogin();
-            if (onPostLoadUrl != null) {
-                activity.loadUrl(onPostLoadUrl);
-            }
         } else {
             Toast.makeText(context, "Bad Username/Password", Toast.LENGTH_LONG).show();
             activity.startPreferencesPage();
@@ -66,36 +57,25 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
 
     @Override
     protected void onPreExecute() {
+        Resources res = activity.getResources();
         myProgress = 0;
         LOGIN_URL = activity.getString(R.string.login_url);
         LOGIN_URL_STEP2 = activity.getString(R.string.login_url2);
-        LOGIN_URL_STEP3 = activity.getString(R.string.login_url3);
         LOGIN_FAILED = activity.getString(R.string.login_failed_str);
+        LOGIN_URL_PAGE_SIZE = res.getInteger(R.integer.size_of_login_url);
+        LOGIN_URL2_PAGE_SIZE = res.getInteger(R.integer.size_of_login_url2);
     }
 
     @Override
     protected Boolean doInBackground(String... params) {
         boolean status;
 
-        if (params.length > 0)
-            onPostLoadUrl = params[0];
         if (!signon()) {
             myProgress = 100;
             publishProgress(myProgress);
             status = false;
         } else {
             status = true;
-            List<Cookie> cookies = httpClient.getCookieStore().getCookies();
-
-            if (cookies != null) {
-                for (Cookie cookie : cookies) {
-                    String cookieString = cookie.getName() + "="
-                            + cookie.getValue() + "; domain=" + cookie.getDomain();
-                    cookieManager.setCookie(cookie.getDomain(),
-                            cookieString);
-                }
-                CookieSyncManager.getInstance().sync();
-            }
         }
         myProgress = 100;
         publishProgress(myProgress);
@@ -111,26 +91,15 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
         String page;
         myProgress = 0;
 
-        page = ETimeUtils.getHtmlPage(httpClient, LOGIN_URL);
+        page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL, this, 0, 40, LOGIN_URL_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
-        myProgress += 32;
-        publishProgress(myProgress);
 
-        page = ETimeUtils.getHtmlPage(httpClient, LOGIN_URL_STEP2);
+        page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL_STEP2, this, 40, 100, LOGIN_URL2_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
-        myProgress += 32;
-        publishProgress(myProgress);
-
-        page = ETimeUtils.getHtmlPage(httpClient, LOGIN_URL_STEP3);
-        if (page == null || page.contains(LOGIN_FAILED)) {
-            return false;
-        }
-        myProgress += 32;
-        publishProgress(myProgress);
 
         return true;
     }
@@ -148,15 +117,15 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> {
         this.activity = activity;
     }
 
-    public void setCookieManager(CookieManager cookieManager) {
-        this.cookieManager = cookieManager;
-    }
-
     public void setHttpClient(DefaultHttpClient httpClient) {
         this.httpClient = httpClient;
     }
 
     public void setContext(Context context) {
         this.context = context;
+    }
+
+    public void publishToProgressBar(int progress) {
+        publishProgress(progress);
     }
 }

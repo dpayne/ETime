@@ -1,0 +1,5 @@
+<resources>
+    <integer name="size_of_timestamp_success_url">3885</integer>
+    <integer name="size_of_login_url">729</integer>
+    <integer name="size_of_login_url2">15792</integer>
+</resources>

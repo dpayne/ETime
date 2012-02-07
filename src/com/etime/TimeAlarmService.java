@@ -25,10 +25,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.PowerManager;
 import android.util.Log;
-import android.webkit.*;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.cookie.Cookie;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import java.util.Calendar;
@@ -197,39 +195,12 @@ public class TimeAlarmService extends IntentService {
      * @return  true if login is successful, false otherwise
      */
     private boolean login() {
-        CookieManager cookieManager = getSyncedCookieManager();
         httpClient = new DefaultHttpClient();
         httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1),
                 new UsernamePasswordCredentials(loginName, password));
 
-        if (!signon(httpClient))
-            return false;
+        return signon(httpClient);
 
-        List<Cookie> cookies = httpClient.getCookieStore().getCookies();
-
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                String cookieString = cookie.getName() + "="
-                        + cookie.getValue() + "; domain=" + cookie.getDomain();
-                cookieManager.setCookie(cookie.getDomain(),
-                        cookieString);
-            }
-            CookieSyncManager.getInstance().sync();
-        }
-        return true;
-    }
-
-    /**
-     * Get a synced cookie manager for the autoclock out process.
-     * @return  return the synced cookiemanager.
-     */
-    private CookieManager getSyncedCookieManager() {
-        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(this);
-        CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.setAcceptCookie(true);
-        cookieManager.removeSessionCookie();
-        cookieSyncManager.sync();
-        return cookieManager;
     }
 
     /**

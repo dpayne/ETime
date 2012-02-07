@@ -28,7 +28,6 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.*;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -51,16 +50,10 @@ public class ETimeActivity extends Activity {
     private String PREFS_USERNAME = "username";
     private String PREFS_PASSWORD = "password";
 
-    private String TIMESTAMP_RECORD_URL;
-    private String TIMESTAMP_SUCCESS;
-    private String LOGIN_FAILED_URL;
-    private String LOGIN_FAILED_URL_2;
-
-    private WebView webview;
     private DefaultHttpClient httpClient;
 
-    private String loginName = null;
-    private String password = null;
+    protected String loginName = null;
+    protected String password = null;
 
     private long loginTime; //Used to determine if loginTime is expired
 
@@ -88,7 +81,7 @@ public class ETimeActivity extends Activity {
 
     private boolean notCreated = true;    // onResume not run yet
     private boolean oldAutoClockBeforePreferencePage; //Used to check if auto clock settings has been changed
-    private CookieManager cookieManager;
+    private static String TIMESTAMP_RECORD_URL;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -131,7 +124,7 @@ public class ETimeActivity extends Activity {
      * notification is not set again.
      * @param message  Message to notify user with
      */
-    private void notify(String message) {
+    protected void notify(String message) {
         if (message.equalsIgnoreCase(lastNotificationMessage)) {
             return;
         } else {
@@ -347,29 +340,11 @@ public class ETimeActivity extends Activity {
     }
 
     /**
-     * Used to set the progressBar in the UI.
-     */
-    private class MyWebChromeClient extends WebChromeClient {
-        public void onProgressChanged(WebView view, int progress) {
-            progressBar.setProgress(progress);
-        }
-    }
-
-    /**
      * setup global variables, only called on the first call to onResume
      */
     private void setupGlobals() {
         loginTime = 0;
         httpClient = new DefaultHttpClient();
-
-        TIMESTAMP_RECORD_URL = getString(R.string.timestamp_record_url);
-        TIMESTAMP_SUCCESS = getString(R.string.timestamp_success_url);
-        LOGIN_FAILED_URL = getString(R.string.login_failed_url);
-        LOGIN_FAILED_URL_2 = getString(R.string.login_failed_url_2);
-
-        webview = (WebView) findViewById(R.id.web_engine);
-        webview = ETimeUtils.setupWebView(webview, new MyWebViewClient(), new MyWebChromeClient());
-        cookieManager = getSyncedCookieManager();
 
         progressBar = (ProgressBar) findViewById(R.id.pb_progressBar);
         progressBar2 = (ProgressBar) findViewById(R.id.progressBar2);
@@ -379,6 +354,7 @@ public class ETimeActivity extends Activity {
         curStatus = (Button) findViewById(R.id.btn_curStatus);
         loading = (TextView) findViewById(R.id.tv_load);
         timeToClockOut = (Button) findViewById(R.id.btn_timeToClockOut);
+        TIMESTAMP_RECORD_URL = getString(R.string.timestamp_record_url);
     }
 
     /**
@@ -398,20 +374,6 @@ public class ETimeActivity extends Activity {
     }
 
     /**
-     * Return a sync cookie manager with webview, clear previous sessions
-     * and cookies in webview.
-     * @return A sync cookie manager with webivew.
-     */
-    private CookieManager getSyncedCookieManager() {
-        CookieSyncManager cookieSyncManager = CookieSyncManager.createInstance(webview.getContext());
-        CookieManager cookieManager = CookieManager.getInstance();
-        cookieManager.setAcceptCookie(true);
-        cookieManager.removeSessionCookie();
-        cookieSyncManager.sync();
-        return cookieManager;
-    }
-
-    /**
      * login - sets the title of the app to "ETime - username". Hides the progress bar and
      * shows the title page including the text and buttons. Logs in into the main adp site
      * and saves the relevant cookies in httpclient.
@@ -425,8 +387,7 @@ public class ETimeActivity extends Activity {
 
         if ((curTime - loginTime) > DEF_TIMEOUT || (oldLoginNameBeforePreferencePage != null && !oldLoginNameBeforePreferencePage.equals(loginName))) {
             if (oldLoginNameBeforePreferencePage != null && !oldLoginNameBeforePreferencePage.equals(loginName)) {
-                cookieManager.removeSessionCookie();
-                cookieManager.removeAllCookie();
+
             }
 
             LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
@@ -437,7 +398,6 @@ public class ETimeActivity extends Activity {
                     new UsernamePasswordCredentials(loginName, password));
             loginAsyncTask.setProgressBar(progressBar);
             loginAsyncTask.setActivity(this);
-            loginAsyncTask.setCookieManager(cookieManager);
             loginAsyncTask.setHttpClient(httpClient);
             loginAsyncTask.setContext(getApplicationContext());
             loginAsyncTask.execute();
@@ -548,51 +508,16 @@ public class ETimeActivity extends Activity {
     }
 
     /**
-     * Internal class to create a custom webview. Used to override authentication,
-     * set callback when a page loads, and
-     */
-    private class MyWebViewClient extends WebViewClient {
-        @Override
-        public void onReceivedHttpAuthRequest(WebView view,
-                                              HttpAuthHandler handler, String host, String realm) {
-            handler.proceed(loginName, password);
-        }
-
-        @Override
-        public boolean shouldOverrideUrlLoading(WebView view, String url) {
-            view.loadUrl(url);
-            return true;
-        }
-
-        @Override
-        public void onPageFinished(WebView view, String url) {
-            if (url.equals(TIMESTAMP_SUCCESS)) {
-                hideProgressBar();
-                parseTimeCard();
-                showTitlePageBtns();
-                Toast.makeText(getApplicationContext(), "Time Stamp Successful", Toast.LENGTH_LONG).show();
-            } else if (url.equals(LOGIN_FAILED_URL) || url.equals(LOGIN_FAILED_URL_2)) {
-                hideProgressBar();
-                Toast.makeText(getApplicationContext(), "Invalid Username/Password", Toast.LENGTH_LONG).show();
-                startPreferencesPage();
-            }
-        }
-
-        @Override
-        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-            hideProgressBar();
-            showTitlePageBtns();
-            Toast.makeText(getApplicationContext(), "Unable to connect to service", Toast.LENGTH_LONG).show();
-        }
-    }
-
-    /**
      * Load the timestamp page in webview
      */
     private void clockOut() {
         hideTitlePageBtns();
         showProgressBar();
-        webview.loadUrl(TIMESTAMP_RECORD_URL);
+        TimestampAsyncTask timestampAsyncTask = new TimestampAsyncTask();
+        timestampAsyncTask.setActivity((ETimeActivity) activity);
+        timestampAsyncTask.setHttpClient(httpClient);
+        timestampAsyncTask.setProgressBar(progressBar);
+        timestampAsyncTask.execute();
     }
 
     @Override
@@ -618,16 +543,6 @@ public class ETimeActivity extends Activity {
                 break;
         }
         return true;
-    }
-
-    /**
-     * Load a given url in webview
-     * @param url the url page to be loaded
-     */
-    protected void loadUrl(String url) {
-        hideTitlePageBtns();
-        showProgressBar();
-        webview.loadUrl(url);
     }
 
     /**

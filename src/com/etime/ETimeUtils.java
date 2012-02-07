@@ -18,9 +18,6 @@ package com.etime;
  */
 
 import android.util.Log;
-import android.webkit.WebChromeClient;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -88,28 +85,53 @@ class ETimeUtils {
 
         return page;
     }
+    
+    protected static String getHtmlPageWithProgress(DefaultHttpClient client, String url, ETimeAsyncTask asyncTask,
+                                                    int startProgress, int maxProgress, int estimatedPageSize) {
+        HttpResponse response;
+        HttpGet httpGet;
+        BufferedReader in = null;
+        String page = null;
+        int runningSize = 0;
+        int progress;
 
-    /**
-     * Setup webview with a custom WebViewClient and WebChromeClient. Javascript is enabled, file access is allowed,
-     * zoom works, and javascript can open windows.
-     * @param webview the WebView to be setup.
-     * @param webViewClient The custom WebViewClient to be used.
-     * @param webChromeClient The custom WebChromeClient to be used.
-     * @return return the modified webview.
-     */
-    protected static WebView setupWebView(WebView webview, WebViewClient webViewClient, WebChromeClient webChromeClient) {
+        try {
+            httpGet = new HttpGet(url);
 
-        webview.getSettings().setJavaScriptEnabled(true);
-        webview.getSettings().setJavaScriptCanOpenWindowsAutomatically(true);
-        webview.getSettings().setAllowFileAccess(true);
-        webview.getSettings().setBuiltInZoomControls(true);
-        webview.getSettings().setSupportZoom(true);
-        webview.canGoBack();
+            response = client.execute(httpGet);
 
-        webview.setWebViewClient(webViewClient);
-        webview.setWebChromeClient(webChromeClient);
+            in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
 
-        return webview;
+            StringBuilder sb = new StringBuilder("");
+            String line;
+            String NL = System.getProperty("line.separator");
+
+            while ((line = in.readLine()) != null) {
+                runningSize += line.length();
+                progress = startProgress + (int) (((double)runningSize/((double)estimatedPageSize)) * (maxProgress-startProgress));
+                if (progress > maxProgress) { //happens when estimatedPageSize <= runningSize
+                    progress = maxProgress;
+                }
+
+                asyncTask.publishToProgressBar(progress);
+                sb.append(line).append(NL);
+            }
+
+            page = sb.toString();
+
+        } catch (Exception e) {
+            Log.v(TAG, e.toString());
+        } finally {
+            if (in != null) {
+                try {
+                    in.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+
+        return page;
     }
 
     /**
