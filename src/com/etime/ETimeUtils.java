@@ -44,48 +44,15 @@ class ETimeUtils {
 
     /**
      * Return a string of the raw html web page at 'url'.
+     *
      * @param client The httpclient to be used to get the webpage
-     * @param url The url the webpage is associated with.
-     * @return  A String of the raw html web page
+     * @param url    The url the webpage is associated with.
+     * @return A String of the raw html web page
      */
     protected static String getHtmlPage(DefaultHttpClient client, String url) {
-        HttpResponse response;
-        HttpGet httpGet;
-        BufferedReader in = null;
-        String page = null;
-
-        try {
-            httpGet = new HttpGet(url);
-
-            response = client.execute(httpGet);
-
-            in = new BufferedReader(new InputStreamReader(response.getEntity().getContent()));
-
-            StringBuilder sb = new StringBuilder("");
-            String line;
-            String NL = System.getProperty("line.separator");
-
-            while ((line = in.readLine()) != null) {
-                sb.append(line).append(NL);
-            }
-
-            page = sb.toString();
-
-        } catch (Exception e) {
-            Log.v(TAG, e.toString());
-        } finally {
-            if (in != null) {
-                try {
-                    in.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-        }
-
-        return page;
+        return getHtmlPageWithProgress(client, url, null, 0, 0, 0);
     }
-    
+
     protected static String getHtmlPageWithProgress(DefaultHttpClient client, String url, ETimeAsyncTask asyncTask,
                                                     int startProgress, int maxProgress, int estimatedPageSize) {
         HttpResponse response;
@@ -107,13 +74,15 @@ class ETimeUtils {
             String NL = System.getProperty("line.separator");
 
             while ((line = in.readLine()) != null) {
-                runningSize += line.length();
-                progress = startProgress + (int) (((double)runningSize/((double)estimatedPageSize)) * (maxProgress-startProgress));
-                if (progress > maxProgress) { //happens when estimatedPageSize <= runningSize
-                    progress = maxProgress;
-                }
+                if (asyncTask != null) {
+                    runningSize += line.length();
+                    progress = startProgress + (int) (((double) runningSize / ((double) estimatedPageSize)) * (maxProgress - startProgress));
+                    if (progress > maxProgress) { //happens when estimatedPageSize <= runningSize
+                        progress = maxProgress;
+                    }
 
-                asyncTask.publishToProgressBar(progress);
+                    asyncTask.publishToProgressBar(progress);
+                }
                 sb.append(line).append(NL);
             }
 
@@ -136,13 +105,14 @@ class ETimeUtils {
 
     /**
      * Get the total hrs logged this pay period.
+     *
      * @param page the raw html of the user's timecard page
      * @return A double representing the total hours logged this pay period by the user.
      */
     protected static double getTotalsHrs(String page) {
         double total = 0;
 
-        Pattern pattern = Pattern.compile("(?i)(<div.*?>)("+ TOTAL_STR + ")(.*?)(</div>)");
+        Pattern pattern = Pattern.compile("(?i)(<div.*?>)(" + TOTAL_STR + ")(.*?)(</div>)");
         Matcher matcher = pattern.matcher(page);
         if (matcher.find()) {
             String totalStr = matcher.group(3);
@@ -156,6 +126,7 @@ class ETimeUtils {
 
     /**
      * Return a List of Punches for the current day. The list is empty if there are no punches for today.
+     *
      * @param page the raw html of the user's timecard page
      * @return A list of Punches for the current day.
      */
@@ -175,7 +146,7 @@ class ETimeUtils {
             date = dayOfWeek + " " + Integer.toString(month) + "/" + Integer.toString(day);
         }
 
-        Pattern todaysRowsPattern = Pattern.compile("(?i)(>"+date+")(.*?)(</tr>)", Pattern.MULTILINE | Pattern.DOTALL);
+        Pattern todaysRowsPattern = Pattern.compile("(?i)(>" + date + ")(.*?)(</tr>)", Pattern.MULTILINE | Pattern.DOTALL);
         Matcher todaysRowsMatcher = todaysRowsPattern.matcher(page);
         while (todaysRowsMatcher.find()) {
             curRow = todaysRowsMatcher.group(2);
@@ -187,14 +158,15 @@ class ETimeUtils {
 
     /**
      * Adds all Punches in a given string to a list of punches.
-     * @param row The string to be searched for punches.
+     *
+     * @param row     The string to be searched for punches.
      * @param punches A list of punches to be added to.
      */
     private static void addPunchesFromRowToList(String row, List<Punch> punches) {
         //Format to be matched is
         //  <td title="" class="InPunch"><div class="" title=""> 2:45PM </div></td>
         Pattern punchPattern = Pattern.compile("(?i)((InPunch|OutPunch)\">)(.*?)(>\\s*)(.*?)(\\s*</div>)",
-                    Pattern.MULTILINE | Pattern.DOTALL);
+                Pattern.MULTILINE | Pattern.DOTALL);
         Matcher punchMatcher = punchPattern.matcher(row);
         Punch punch;
 
@@ -216,7 +188,8 @@ class ETimeUtils {
     /**
      * Parse a Punch from a given string. The format is assumed to be "12:00AM". All other calendar fields are set
      * to the current days value. The day, month, year, timezone and other misc fields are set to the current days value.
-     * @param punchStr    The String to be parsed for the punch
+     *
+     * @param punchStr The String to be parsed for the punch
      * @return the parsed Punch
      */
     private static Punch getPunchFromString(String punchStr) {
@@ -262,8 +235,9 @@ class ETimeUtils {
 
     /**
      * Get the total hours logged today from a list pf punches. This method does not account for lunch rounding.
-     * @param punches   A list of punches from a given user for today.
-     * @return  A double of the total hours logged today.
+     *
+     * @param punches A list of punches from a given user for today.
+     * @return A double of the total hours logged today.
      */
     protected static double todaysTotalHrsLogged(List<Punch> punches) {
         long runningMilliSecTotal = 0;
@@ -295,14 +269,15 @@ class ETimeUtils {
         int minutes = (int) (Math.round((((runningMilliSecTotal / 1000) / 60) % 60) / 15.0) * 15);
         double mins = (minutes) / 60.0;
 
-        return ((double)hrs) + mins;
+        return ((double) hrs) + mins;
     }
 
     /**
      * Get the calculated eight hour punch. The eight hour punch is identical to the punch that is need for the user to
      * log exactly 8 hours for today.
-     * @param punches   A list of punches logged today by a given user.
-     * @return  The calculated eight hour punch.
+     *
+     * @param punches A list of punches logged today by a given user.
+     * @return The calculated eight hour punch.
      */
     protected static Punch getEightHrPunch(List<Punch> punches) {
         if (punches == null || punches.isEmpty())
@@ -318,8 +293,9 @@ class ETimeUtils {
 
     /**
      * return a long of the milliseconds since epoch the user should clock out at to log exactly 8 hours.
-     * @param punches   A list of punches logged today by a given user.
-     * @return  A long of the milliseconds since epoch the user should clock out at to log exactly 8 hours.
+     *
+     * @param punches A list of punches logged today by a given user.
+     * @return A long of the milliseconds since epoch the user should clock out at to log exactly 8 hours.
      */
     protected static long clockOutAt(List<Punch> punches) {
         Iterator<Punch> iterPunches = punches.iterator();
