@@ -23,6 +23,7 @@ public class TimestampAsyncTask extends AsyncTask <String, Integer, Boolean> imp
     @Override
     protected void onPreExecute() {
         Resources res = activity.getResources();
+        publishProgress(0);
         TIMESTAMP_RECORD_URL = activity.getString(R.string.timestamp_record_url);
         LOGIN_FAILED = activity.getString(R.string.login_failed_str);
         TIMESTAMP_URL_PAGE_SIZE = res.getInteger(R.integer.size_of_timestamp_success_url);
@@ -31,6 +32,7 @@ public class TimestampAsyncTask extends AsyncTask <String, Integer, Boolean> imp
     @Override
     protected Boolean doInBackground(String... strings) {
         String page = ETimeUtils.getHtmlPageWithProgress(httpClient, TIMESTAMP_RECORD_URL, this, 0, 100, TIMESTAMP_URL_PAGE_SIZE);
+        publishProgress(100);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
@@ -42,6 +44,7 @@ public class TimestampAsyncTask extends AsyncTask <String, Integer, Boolean> imp
         Toast.makeText(activity, "Timestamp Successful", Toast.LENGTH_LONG).show();
         activity.hideProgressBar();
         activity.showTitlePageBtns();
+        activity.parseTimeCard();
     }
 
     @Override

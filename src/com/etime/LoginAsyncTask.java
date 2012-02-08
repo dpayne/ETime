@@ -63,7 +63,7 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
         LOGIN_URL_STEP2 = activity.getString(R.string.login_url2);
         LOGIN_FAILED = activity.getString(R.string.login_failed_str);
         LOGIN_URL_PAGE_SIZE = res.getInteger(R.integer.size_of_login_url);
-        LOGIN_URL2_PAGE_SIZE = res.getInteger(R.integer.size_of_login_url2);
+        LOGIN_URL2_PAGE_SIZE = res.getInteger(R.integer.size_of_login_url2_noredirect);
     }
 
     @Override
@@ -91,12 +91,23 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
         String page;
         myProgress = 0;
 
-        page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL, this, 0, 40, LOGIN_URL_PAGE_SIZE);
+        publishProgress(10);
+        page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL, this, 10, 30, LOGIN_URL_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
 
-        page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL_STEP2, this, 40, 100, LOGIN_URL2_PAGE_SIZE);
+        page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL_STEP2, this, 30, 50, LOGIN_URL2_PAGE_SIZE);
+        if (page == null || page.contains(LOGIN_FAILED)) {
+            return false;
+        }
+
+        page = ETimeUtils.getHtmlPageWithProgress(httpClient, page, this, 50, 80, LOGIN_URL_PAGE_SIZE);
+        if (page == null || page.contains(LOGIN_FAILED)) {
+            return false;
+        }
+
+        page = ETimeUtils.getHtmlPageWithProgress(httpClient, page, this, 80, 100, LOGIN_URL_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }

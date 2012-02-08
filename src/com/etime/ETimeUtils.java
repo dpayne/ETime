@@ -18,6 +18,7 @@ package com.etime;
  */
 
 import android.util.Log;
+import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -60,7 +61,9 @@ class ETimeUtils {
         BufferedReader in = null;
         String page = null;
         int runningSize = 0;
-        int progress;
+        int progress = startProgress;
+        int tempProgress;
+        String redirect = null;
 
         try {
             httpGet = new HttpGet(url);
@@ -73,10 +76,28 @@ class ETimeUtils {
             String line;
             String NL = System.getProperty("line.separator");
 
+            Header [] headers = response.getAllHeaders();
+            for (Header header : headers) {
+                Log.v(TAG, "Header  " + header.getName() + ":" + header.getValue());
+                if (header.getName().equals("Content-Length")) {
+                    try {
+                        estimatedPageSize = Integer.parseInt(header.getValue());
+                    } catch (Exception e) {
+                        Log.w(TAG, e.toString());
+                    }
+                } else if (header.getName().equals("Location")) {
+                    redirect = header.getValue();
+                }
+                if (asyncTask != null) {
+                    progress += 5/(maxProgress-startProgress);
+                    asyncTask.publishToProgressBar(progress);
+                }
+            }
             while ((line = in.readLine()) != null) {
                 if (asyncTask != null) {
                     runningSize += line.length();
-                    progress = startProgress + (int) (((double) runningSize / ((double) estimatedPageSize)) * (maxProgress - startProgress));
+                    tempProgress = startProgress + (int) (((double) runningSize / ((double) estimatedPageSize)) * (maxProgress - startProgress));
+                    progress = (progress >= tempProgress ? progress : tempProgress);
                     if (progress > maxProgress) { //happens when estimatedPageSize <= runningSize
                         progress = maxProgress;
                     }
@@ -85,8 +106,8 @@ class ETimeUtils {
                 }
                 sb.append(line).append(NL);
             }
-
             page = sb.toString();
+            Log.v(TAG, "Page size for " + url + "  is: " + page.length());
 
         } catch (Exception e) {
             Log.v(TAG, e.toString());
@@ -98,6 +119,10 @@ class ETimeUtils {
                     e.printStackTrace();
                 }
             }
+        }
+
+        if (redirect != null) {
+            return redirect;
         }
 
         return page;
