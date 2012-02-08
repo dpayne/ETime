@@ -127,8 +127,28 @@ public class TimeCardActivity extends Activity {
 
 
     private class MyWebChromeClient extends WebChromeClient {
+    	int oldProgress = 0;
+    	
         public void onProgressChanged(WebView view, int progress) {
-            progressBar.setProgress(progress);
+        	int newProgress = 0;
+        	String url = view.getUrl();
+        	
+        	if(!(url == null) && (url.equals(LOGIN_URL) || url.equals(TIMESTAMP_URL) || url.equals(TIMECARD_URL))){
+        		if(url.equals(LOGIN_URL))
+        			newProgress = progress/3;
+        		else if(url.equals(TIMESTAMP_URL))
+	        		newProgress = progress/3+33;
+	        	else if(url.equals(TIMECARD_URL))
+	        		newProgress = (progress/3)+66;
+	        	
+	        	if(newProgress > oldProgress)
+	        		oldProgress = newProgress;
+	        	
+	        	progressBar.setProgress(oldProgress);
+        	}
+        	
+        	//Log.v("ETime-TimeCardActivity", "url: "+url);
+        	//Log.v("ETime-TimeCardActivity", "Progress: "+oldProgress);
         }
     }
 }
