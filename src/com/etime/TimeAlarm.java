@@ -34,7 +34,7 @@ public class TimeAlarm extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         /* Acquire the the wake lock to keep the phone awake even when onRecieve is finished. */
-        TimeAlarmService.getLock().acquire();
+        TimeAlarmService.setLockContext(context);
 
         String loginName = intent.getStringExtra("username");
         String password = intent.getStringExtra("password");
@@ -42,6 +42,7 @@ public class TimeAlarm extends BroadcastReceiver {
     	Intent alarmIntent = new Intent(context, TimeAlarmService.class);
     	alarmIntent.putExtra(TimeAlarmService.USERNAME, loginName);
     	alarmIntent.putExtra(TimeAlarmService.PASSWORD, password);
+        TimeAlarmService.getLock().acquire();
     	context.startService(alarmIntent);
     }
 }

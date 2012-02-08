@@ -47,7 +47,6 @@ public class TimeAlarmService extends IntentService {
     private String TIMECARD_URL;
     private String LOGIN_URL;
     private String LOGIN_URL_STEP2;
-    private String LOGIN_URL_STEP3;
     private String TIMESTAMP_RECORD_URL;
     private String LOGIN_FAILED;
     private List<Punch> punches;
@@ -63,9 +62,6 @@ public class TimeAlarmService extends IntentService {
     @Override
     protected void onHandleIntent(Intent intent) {
         try {
-            runs++;
-
-            lockContext = this;
             nm = (NotificationManager) this
                     .getSystemService(Context.NOTIFICATION_SERVICE);
             boolean retval;
@@ -75,7 +71,6 @@ public class TimeAlarmService extends IntentService {
 
             LOGIN_URL = lockContext.getString(R.string.login_url);
             LOGIN_URL_STEP2 = lockContext.getString(R.string.login_url2);
-            LOGIN_URL_STEP3 = lockContext.getString(R.string.login_url3);
             TIMECARD_URL = lockContext.getString(R.string.timecard_url);
             TIMESTAMP_RECORD_URL = lockContext.getString(R.string.timestamp_record_url);
             LOGIN_FAILED = lockContext.getString(R.string.login_failed_str);
@@ -91,15 +86,12 @@ public class TimeAlarmService extends IntentService {
             retval = clockOut();
 
             if (!retval) {
-                if (runs <= 1) {
-                    onHandleIntent(intent);
-                }
                 notifyAutoClockOutFailure();
             } else {
                 notifyAutoClockOutSuccess();
             }
         } finally {
-            getLock().release();
+            TimeAlarmService.getLock().release();
         }
     }
 
@@ -200,7 +192,6 @@ public class TimeAlarmService extends IntentService {
                 new UsernamePasswordCredentials(loginName, password));
 
         return signon(httpClient);
-
     }
 
     /**
@@ -218,11 +209,7 @@ public class TimeAlarmService extends IntentService {
         }
 
         page = ETimeUtils.getHtmlPage(httpClient, LOGIN_URL_STEP2);
-        if (page == null || page.contains(LOGIN_FAILED)) {
-            return false;
-        }
 
-        page = ETimeUtils.getHtmlPage(httpClient, LOGIN_URL_STEP3);
         return !(page == null || page.contains(LOGIN_FAILED));
     }
 
@@ -240,5 +227,9 @@ public class TimeAlarmService extends IntentService {
         }
 
         return (lockStatic);
+    }
+
+    protected synchronized static void setLockContext(Context context) {
+        TimeAlarmService.lockContext = context;
     }
 }
