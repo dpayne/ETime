@@ -34,7 +34,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.params.HttpClientParams;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.params.HttpParams;
 
 import java.util.Calendar;
 import java.util.List;
@@ -386,16 +388,18 @@ public class ETimeActivity extends Activity {
         setTitle("ETime - " + loginName);
 
         if ((curTime - loginTime) > DEF_TIMEOUT || (oldLoginNameBeforePreferencePage != null && !oldLoginNameBeforePreferencePage.equals(loginName))) {
-            if (oldLoginNameBeforePreferencePage != null && !oldLoginNameBeforePreferencePage.equals(loginName)) {
-
+            if (httpClient != null) {
+                httpClient.getConnectionManager().shutdown();
             }
-
             LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
             progressBar.setProgress(0);
 
             httpClient = new DefaultHttpClient();
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1),
                     new UsernamePasswordCredentials(loginName, password));
+            HttpParams params = httpClient.getParams();
+            HttpClientParams.setRedirecting(params, false);
+
             loginAsyncTask.setProgressBar(progressBar);
             loginAsyncTask.setActivity(this);
             loginAsyncTask.setHttpClient(httpClient);
