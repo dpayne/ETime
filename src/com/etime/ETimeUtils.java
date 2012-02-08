@@ -76,7 +76,7 @@ class ETimeUtils {
             String line;
             String NL = System.getProperty("line.separator");
 
-            Header [] headers = response.getAllHeaders();
+            Header[] headers = response.getAllHeaders();
             for (Header header : headers) {
                 Log.v(TAG, "Header  " + header.getName() + ":" + header.getValue());
                 if (header.getName().equals("Content-Length")) {
@@ -89,7 +89,7 @@ class ETimeUtils {
                     redirect = header.getValue();
                 }
                 if (asyncTask != null) {
-                    progress += 5/(maxProgress-startProgress);
+                    progress += 5 / (maxProgress - startProgress);
                     asyncTask.publishToProgressBar(progress);
                 }
             }
@@ -137,13 +137,17 @@ class ETimeUtils {
     protected static double getTotalsHrs(String page) {
         double total = 0;
 
-        Pattern pattern = Pattern.compile("(?i)(<div.*?>)(" + TOTAL_STR + ")(.*?)(</div>)");
-        Matcher matcher = pattern.matcher(page);
-        if (matcher.find()) {
-            String totalStr = matcher.group(3);
-            if (!totalStr.isEmpty()) {
-                total = Double.parseDouble(totalStr);
+        try {
+            Pattern pattern = Pattern.compile("(?i)(<div.*?>)(" + TOTAL_STR + ")(.*?)(</div>)");
+            Matcher matcher = pattern.matcher(page);
+            if (matcher.find()) {
+                String totalStr = matcher.group(3);
+                if (!totalStr.isEmpty()) {
+                    total = Double.parseDouble(totalStr);
+                }
             }
+        } catch (NumberFormatException e) {
+            Log.w(TAG, e.toString());
         }
 
         return total;
@@ -170,12 +174,15 @@ class ETimeUtils {
         } else {
             date = dayOfWeek + " " + Integer.toString(month) + "/" + Integer.toString(day);
         }
-
-        Pattern todaysRowsPattern = Pattern.compile("(?i)(>" + date + ")(.*?)(</tr>)", Pattern.MULTILINE | Pattern.DOTALL);
-        Matcher todaysRowsMatcher = todaysRowsPattern.matcher(page);
-        while (todaysRowsMatcher.find()) {
-            curRow = todaysRowsMatcher.group(2);
-            addPunchesFromRowToList(curRow, punchesList);
+        try {
+            Pattern todaysRowsPattern = Pattern.compile("(?i)(>" + date + ")(.*?)(</tr>)", Pattern.MULTILINE | Pattern.DOTALL);
+            Matcher todaysRowsMatcher = todaysRowsPattern.matcher(page);
+            while (todaysRowsMatcher.find()) {
+                curRow = todaysRowsMatcher.group(2);
+                addPunchesFromRowToList(curRow, punchesList);
+            }
+        } catch (Exception e) {
+            Log.w(TAG, e.toString());
         }
 
         return punchesList;

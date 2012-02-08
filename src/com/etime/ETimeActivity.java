@@ -580,4 +580,8 @@ public class ETimeActivity extends Activity {
                 intent, PendingIntent.FLAG_ONE_SHOT);
         am.set(AlarmManager.RTC_WAKEUP, alarmTime, pendingIntentAutoClockAlarm);
     }
+
+    public void setLoginTime(long loginTime) {
+        this.loginTime = loginTime;
+    }
 }
