@@ -133,11 +133,13 @@ public class TimeCardActivity extends Activity {
         	int newProgress = 0;
         	String url = view.getUrl();
         	
-        	if(!(url == null) && (url.equals(TIMESTAMP_URL) || url.equals(TIMECARD_URL))){
-	        	if(url.equals(TIMESTAMP_URL))
-	        		newProgress = progress/2;
+        	if(!(url == null) && (url.equals(LOGIN_URL) || url.equals(TIMESTAMP_URL) || url.equals(TIMECARD_URL))){
+        		if(url.equals(LOGIN_URL))
+        			newProgress = progress/3;
+        		else if(url.equals(TIMESTAMP_URL))
+	        		newProgress = progress/3+33;
 	        	else if(url.equals(TIMECARD_URL))
-	        		newProgress = (progress/2)+50;
+	        		newProgress = (progress/3)+66;
 	        	
 	        	if(newProgress > oldProgress)
 	        		oldProgress = newProgress;
