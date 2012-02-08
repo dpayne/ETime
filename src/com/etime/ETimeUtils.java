@@ -78,7 +78,6 @@ class ETimeUtils {
 
             Header[] headers = response.getAllHeaders();
             for (Header header : headers) {
-                Log.v(TAG, "Header  " + header.getName() + ":" + header.getValue());
                 if (header.getName().equals("Content-Length")) {
                     try {
                         estimatedPageSize = Integer.parseInt(header.getValue());
@@ -107,7 +106,6 @@ class ETimeUtils {
                 sb.append(line).append(NL);
             }
             page = sb.toString();
-            Log.v(TAG, "Page size for " + url + "  is: " + page.length());
 
         } catch (Exception e) {
             Log.v(TAG, e.toString());
@@ -146,7 +144,7 @@ class ETimeUtils {
                     total = Double.parseDouble(totalStr);
                 }
             }
-        } catch (NumberFormatException e) {
+        } catch (Exception e) {
             Log.w(TAG, e.toString());
         }
 

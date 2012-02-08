@@ -83,7 +83,6 @@ public class ETimeActivity extends Activity {
 
     private boolean notCreated = true;    // onResume not run yet
     private boolean oldAutoClockBeforePreferencePage; //Used to check if auto clock settings has been changed
-    private static String TIMESTAMP_RECORD_URL;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -356,7 +355,6 @@ public class ETimeActivity extends Activity {
         curStatus = (Button) findViewById(R.id.btn_curStatus);
         loading = (TextView) findViewById(R.id.tv_load);
         timeToClockOut = (Button) findViewById(R.id.btn_timeToClockOut);
-        TIMESTAMP_RECORD_URL = getString(R.string.timestamp_record_url);
     }
 
     /**
@@ -387,7 +385,8 @@ public class ETimeActivity extends Activity {
 
         setTitle("ETime - " + loginName);
 
-        if ((curTime - loginTime) > DEF_TIMEOUT || (oldLoginNameBeforePreferencePage != null && !oldLoginNameBeforePreferencePage.equals(loginName))) {
+        if (((curTime - loginTime) > DEF_TIMEOUT) || !oldLoginNameBeforePreferencePage.equals(loginName)) {
+            oldLoginNameBeforePreferencePage = loginName;
             if (httpClient != null) {
                 httpClient.getConnectionManager().shutdown();
             }
@@ -408,7 +407,7 @@ public class ETimeActivity extends Activity {
         } else {
             hideProgressBar();
             showTitlePageBtns();
-            if ((AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage) || AUTO_CLOCKOUT) {
+            if (AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage) {
                 parseTimeCard();
             }
         }
@@ -499,6 +498,7 @@ public class ETimeActivity extends Activity {
         loginName = pref.getString(PREFS_USERNAME, null);
         password = pref.getString(PREFS_PASSWORD, null);
         AUTO_CLOCKOUT = pref.getBoolean(getString(R.string.autoclock), false);
+        Log.v(TAG, "Autoclock out is " + AUTO_CLOCKOUT);
 
         if (AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage && !AUTO_CLOCKOUT) {
             if (pendingIntentAutoClockAlarm != null) {
