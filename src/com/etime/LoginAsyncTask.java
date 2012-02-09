@@ -51,8 +51,8 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
             activity.onPostLogin();
         } else {
             Toast.makeText(context, "Bad Username/Password", Toast.LENGTH_LONG).show();
-            activity.startPreferencesPage();
             activity.setLoginTime(0);
+            activity.startPreferencesPage();
         }
     }
 
