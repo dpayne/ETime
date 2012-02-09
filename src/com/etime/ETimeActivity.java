@@ -381,19 +381,16 @@ public class ETimeActivity extends Activity {
      * If login has happened in the last 15 mins, don't re-login.
      */
     private void login() {
-        long curTime = Calendar.getInstance().getTimeInMillis();
+        long curTime = System.currentTimeMillis();
 
         setTitle("ETime - " + loginName);
 
-        if (((curTime - loginTime) > DEF_TIMEOUT) || !oldLoginNameBeforePreferencePage.equals(loginName)) {
+        if (((curTime - loginTime) > 5000) || !oldLoginNameBeforePreferencePage.equals(loginName)) {
             oldLoginNameBeforePreferencePage = loginName;
-            if (httpClient != null) {
-                httpClient.getConnectionManager().shutdown();
-            }
+
             LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
             progressBar.setProgress(0);
 
-            httpClient = new DefaultHttpClient();
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1),
                     new UsernamePasswordCredentials(loginName, password));
             HttpParams params = httpClient.getParams();
@@ -404,6 +401,10 @@ public class ETimeActivity extends Activity {
             loginAsyncTask.setHttpClient(httpClient);
             loginAsyncTask.setContext(getApplicationContext());
             loginAsyncTask.execute();
+
+            if (progressBar.getVisibility() == View.GONE) {
+                progressBar2.setVisibility(View.VISIBLE);
+            }
         } else {
             hideProgressBar();
             showTitlePageBtns();
@@ -498,7 +499,6 @@ public class ETimeActivity extends Activity {
         loginName = pref.getString(PREFS_USERNAME, null);
         password = pref.getString(PREFS_PASSWORD, null);
         AUTO_CLOCKOUT = pref.getBoolean(getString(R.string.autoclock), false);
-        Log.v(TAG, "Autoclock out is " + AUTO_CLOCKOUT);
 
         if (AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage && !AUTO_CLOCKOUT) {
             if (pendingIntentAutoClockAlarm != null) {

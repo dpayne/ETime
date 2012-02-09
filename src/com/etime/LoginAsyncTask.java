@@ -102,6 +102,10 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
+        
+        if (page.equals("/wfc/applications/suitenav/navigation.do?ESS=true")) {
+            return true; //already logged in
+        }
 
         page = ETimeUtils.getHtmlPageWithProgress(httpClient, page, this, 50, 80, LOGIN_URL_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
