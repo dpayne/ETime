@@ -19,7 +19,6 @@ package com.etime;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.View;
 import android.webkit.HttpAuthHandler;
 import android.webkit.WebChromeClient;
@@ -108,7 +107,6 @@ public class TimeCardActivity extends Activity {
 
         @Override
         public void onPageFinished(WebView view, String url) {
-            Log.v(TAG, url);
             if (url.equals(TIMECARD_URL)) {
                 hideProgressBar();
                 webview.setVisibility(View.VISIBLE);
@@ -146,9 +144,6 @@ public class TimeCardActivity extends Activity {
 	        	
 	        	progressBar.setProgress(oldProgress);
         	}
-        	
-        	//Log.v("ETime-TimeCardActivity", "url: "+url);
-        	//Log.v("ETime-TimeCardActivity", "Progress: "+oldProgress);
         }
     }
 }
