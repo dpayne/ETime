@@ -44,13 +44,14 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
     int myProgress;
     private int LOGIN_URL_PAGE_SIZE;
     private int LOGIN_URL2_PAGE_SIZE;
+    private int step = 0;
 
     @Override
     protected void onPostExecute(Boolean result) {
         if (result) {
             activity.onPostLogin();
         } else {
-            Toast.makeText(context, "Bad Username/Password", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Bad Username/Password " + step, Toast.LENGTH_LONG).show();
             activity.setLoginTime(0);
             activity.startPreferencesPage();
         }
@@ -93,30 +94,35 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
         myProgress = 0;
 
         publishProgress(10);
+        step = 0;
         page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL, this, 10, 30, LOGIN_URL_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
 
+        step++;
         page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL_STEP2, this, 30, 50, LOGIN_URL2_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
-        
+
+        step++;
         if (page.equals("/wfc/applications/suitenav/navigation.do?ESS=true")) {
             return true; //already logged in
         }
 
+        step++;
         page = ETimeUtils.getHtmlPageWithProgress(httpClient, page, this, 50, 80, LOGIN_URL_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
 
+        step++;
         page = ETimeUtils.getHtmlPageWithProgress(httpClient, page, this, 80, 100, LOGIN_URL_PAGE_SIZE);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
-
+        step++;
         return true;
     }
 
