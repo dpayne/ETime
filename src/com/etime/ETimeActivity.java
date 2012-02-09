@@ -32,11 +32,22 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import org.apache.http.HttpVersion;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnManagerPNames;
+import org.apache.http.conn.params.ConnPerRouteBean;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
 
 import java.util.Calendar;
 import java.util.List;
@@ -83,7 +94,6 @@ public class ETimeActivity extends Activity {
 
     private boolean notCreated = true;    // onResume not run yet
     private boolean oldAutoClockBeforePreferencePage; //Used to check if auto clock settings has been changed
-    private static String TIMESTAMP_RECORD_URL;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -356,7 +366,6 @@ public class ETimeActivity extends Activity {
         curStatus = (Button) findViewById(R.id.btn_curStatus);
         loading = (TextView) findViewById(R.id.tv_load);
         timeToClockOut = (Button) findViewById(R.id.btn_timeToClockOut);
-        TIMESTAMP_RECORD_URL = getString(R.string.timestamp_record_url);
     }
 
     /**
@@ -383,21 +392,33 @@ public class ETimeActivity extends Activity {
      * If login has happened in the last 15 mins, don't re-login.
      */
     private void login() {
-        long curTime = Calendar.getInstance().getTimeInMillis();
+        long curTime = System.currentTimeMillis();
 
         setTitle("ETime - " + loginName);
 
-        if ((curTime - loginTime) > DEF_TIMEOUT || (oldLoginNameBeforePreferencePage != null && !oldLoginNameBeforePreferencePage.equals(loginName))) {
-            if (httpClient != null) {
-                httpClient.getConnectionManager().shutdown();
-            }
+        if (((curTime - loginTime) > DEF_TIMEOUT) || !oldLoginNameBeforePreferencePage.equals(loginName)) {
+            oldLoginNameBeforePreferencePage = loginName;
+
             LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
             progressBar.setProgress(0);
 
-            httpClient = new DefaultHttpClient();
+            SchemeRegistry schemeRegistry = new SchemeRegistry();
+            schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+            schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
+             
+            HttpParams params = new BasicHttpParams();
+            params.setParameter(ConnManagerPNames.MAX_TOTAL_CONNECTIONS, 30);
+            params.setParameter(ConnManagerPNames.MAX_CONNECTIONS_PER_ROUTE, new ConnPerRouteBean(30));
+            params.setParameter(HttpProtocolParams.USE_EXPECT_CONTINUE, false);
+            HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+             
+            ClientConnectionManager cm = new SingleClientConnManager(params, schemeRegistry);
+            
+            //HttpParams httpParams = new BasicHttpParams();
+            httpClient = new DefaultHttpClient(cm, params);
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1),
                     new UsernamePasswordCredentials(loginName, password));
-            HttpParams params = httpClient.getParams();
+            params = httpClient.getParams();
             HttpClientParams.setRedirecting(params, false);
 
             loginAsyncTask.setProgressBar(progressBar);
@@ -405,10 +426,14 @@ public class ETimeActivity extends Activity {
             loginAsyncTask.setHttpClient(httpClient);
             loginAsyncTask.setContext(getApplicationContext());
             loginAsyncTask.execute();
+
+            if (progressBar.getVisibility() == View.GONE) {
+                progressBar2.setVisibility(View.VISIBLE);
+            }
         } else {
             hideProgressBar();
             showTitlePageBtns();
-            if ((AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage) || AUTO_CLOCKOUT) {
+            if (AUTO_CLOCKOUT != oldAutoClockBeforePreferencePage) {
                 parseTimeCard();
             }
         }
