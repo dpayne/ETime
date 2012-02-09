@@ -32,11 +32,21 @@ import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+import org.apache.http.HttpVersion;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.params.HttpClientParams;
+import org.apache.http.conn.ClientConnectionManager;
+import org.apache.http.conn.params.ConnManagerPNames;
+import org.apache.http.conn.params.ConnPerRouteBean;
+import org.apache.http.conn.scheme.PlainSocketFactory;
+import org.apache.http.conn.scheme.Scheme;
+import org.apache.http.conn.scheme.SchemeRegistry;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.impl.conn.SingleClientConnManager;
+import org.apache.http.params.BasicHttpParams;
 import org.apache.http.params.HttpParams;
+import org.apache.http.params.HttpProtocolParams;
 
 import java.util.Calendar;
 import java.util.List;
@@ -345,7 +355,8 @@ public class ETimeActivity extends Activity {
      */
     private void setupGlobals() {
         loginTime = 0;
-        httpClient = new DefaultHttpClient();
+
+        httpClient = setupHttpClient();
 
         progressBar = (ProgressBar) findViewById(R.id.pb_progressBar);
         progressBar2 = (ProgressBar) findViewById(R.id.progressBar2);
@@ -355,6 +366,22 @@ public class ETimeActivity extends Activity {
         curStatus = (Button) findViewById(R.id.btn_curStatus);
         loading = (TextView) findViewById(R.id.tv_load);
         timeToClockOut = (Button) findViewById(R.id.btn_timeToClockOut);
+    }
+
+    private DefaultHttpClient setupHttpClient() {
+        SchemeRegistry schemeRegistry = new SchemeRegistry();
+        schemeRegistry.register(new Scheme("http", PlainSocketFactory.getSocketFactory(), 80));
+        schemeRegistry.register(new Scheme("https", new EasySSLSocketFactory(), 443));
+
+        HttpParams params = new BasicHttpParams();
+        params.setParameter(ConnManagerPNames.MAX_TOTAL_CONNECTIONS, 30);
+        params.setParameter(ConnManagerPNames.MAX_CONNECTIONS_PER_ROUTE, new ConnPerRouteBean(30));
+        params.setParameter(HttpProtocolParams.USE_EXPECT_CONTINUE, false);
+        HttpProtocolParams.setVersion(params, HttpVersion.HTTP_1_1);
+        HttpClientParams.setRedirecting(params, false);
+
+        ClientConnectionManager cm = new SingleClientConnManager(params, schemeRegistry);
+        return (new DefaultHttpClient(cm, params));
     }
 
     /**
@@ -391,10 +418,9 @@ public class ETimeActivity extends Activity {
             LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
             progressBar.setProgress(0);
 
+
             httpClient.getCredentialsProvider().setCredentials(new AuthScope(null, -1),
                     new UsernamePasswordCredentials(loginName, password));
-            HttpParams params = httpClient.getParams();
-            HttpClientParams.setRedirecting(params, false);
 
             loginAsyncTask.setProgressBar(progressBar);
             loginAsyncTask.setActivity(this);
