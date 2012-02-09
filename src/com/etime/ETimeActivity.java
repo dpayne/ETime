@@ -385,7 +385,7 @@ public class ETimeActivity extends Activity {
 
         setTitle("ETime - " + loginName);
 
-        if (((curTime - loginTime) > 5000) || !oldLoginNameBeforePreferencePage.equals(loginName)) {
+        if (((curTime - loginTime) > DEF_TIMEOUT) || !oldLoginNameBeforePreferencePage.equals(loginName)) {
             oldLoginNameBeforePreferencePage = loginName;
 
             LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
