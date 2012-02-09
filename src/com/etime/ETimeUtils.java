@@ -140,7 +140,7 @@ class ETimeUtils {
             Matcher matcher = pattern.matcher(page);
             if (matcher.find()) {
                 String totalStr = matcher.group(3);
-                if (!totalStr.isEmpty()) {
+                if (!(totalStr==null || totalStr.trim().length() == 0)) {
                     total = Double.parseDouble(totalStr);
                 }
             }
