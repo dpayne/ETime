@@ -20,6 +20,7 @@ package com.etime;
 import android.content.Context;
 import android.content.res.Resources;
 import android.os.AsyncTask;
+import android.util.Log;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 import org.apache.http.impl.client.DefaultHttpClient;
@@ -95,13 +96,20 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
 
         publishProgress(10);
         step = 0;
-        page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL, this, 10, 30, LOGIN_URL_PAGE_SIZE);
-        if (page == null || page.contains(LOGIN_FAILED)) {
+        Log.v(TAG, "log in start");
+        do{
+        	page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL, this, 10, 30, LOGIN_URL_PAGE_SIZE);
+        	Log.v(TAG, "page = "+page);
+        	if(page == null)
+        		Log.v(TAG, "Login attemp failed. Retrying...");
+        }while(page == null);
+        if (page.contains(LOGIN_FAILED)) {
             return false;
         }
 
         step++;
         page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL_STEP2, this, 30, 50, LOGIN_URL2_PAGE_SIZE);
+        Log.v(TAG, "page = "+page);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
@@ -113,16 +121,19 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
 
         step++;
         page = ETimeUtils.getHtmlPageWithProgress(httpClient, page, this, 50, 80, LOGIN_URL_PAGE_SIZE);
+        Log.v(TAG, "page = "+page);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
 
         step++;
         page = ETimeUtils.getHtmlPageWithProgress(httpClient, page, this, 80, 100, LOGIN_URL_PAGE_SIZE);
+        Log.v(TAG, "page = "+page);
         if (page == null || page.contains(LOGIN_FAILED)) {
             return false;
         }
         step++;
+        Log.v(TAG, "log in end");
         return true;
     }
 
