@@ -96,13 +96,21 @@ public class LoginAsyncTask extends AsyncTask<String, Integer, Boolean> implemen
 
         publishProgress(10);
         step = 0;
+        int i=0;
         Log.v(TAG, "log in start");
         do{
+            if (i >= 3) {
+                return false;
+            }
+            i++;
+
         	page = ETimeUtils.getHtmlPageWithProgress(httpClient, LOGIN_URL, this, 10, 30, LOGIN_URL_PAGE_SIZE);
         	Log.v(TAG, "page = "+page);
         	if(page == null)
         		Log.v(TAG, "Login attemp failed. Retrying...");
+
         }while(page == null);
+
         if (page.contains(LOGIN_FAILED)) {
             return false;
         }
